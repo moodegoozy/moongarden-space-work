@@ -10,6 +10,7 @@ import Rooms from "./pages/Rooms"
 import Villas from "./pages/Villas"
 import UnitDetails from "./pages/UnitDetails"
 import SearchResults from "./pages/SearchResults" // ✅ صفحة البحث الجديدة
+import Review from "./pages/Review"
 
 // ✅ Swiper
 import { Swiper, SwiperSlide } from "swiper/react"
@@ -152,6 +153,9 @@ export default function App() {
 
         {/* ✅ صفحة نتائج البحث */}
         <Route path="/search" element={<SearchResults />} /> {/* ✅ جديد */}
+
+        {/* ✅ صفحة آراء العملاء */}
+        <Route path="/review" element={<Review />} />
 
         {/* ✅ تسجيل دخول الإدارة */}
         <Route path="/admin" element={<AdminLogin />} />
