@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+
+    /* 🔑 المسارات المختصرة */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    },
+
+    /* 🔧 بيئة Node لسكربتاتك (process, fs, الخ) */
+    "types": ["node"],
+
+    /* ⛔ منع إخراج JS داخل src */
+    "noEmit": true,
+
+    /* تأكد إننا لا نولّد تعريفات الآن */
+    "declaration": false,
+    "composite": false
+  },
+  "include": ["src"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/scripts"  /* ⛔ استبعد سكربتات Node من البناء الأمامي */
+  ]
+}
