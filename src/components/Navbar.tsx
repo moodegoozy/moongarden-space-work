@@ -2,49 +2,48 @@ import { Link } from "react-router-dom"
 
 export default function Navbar() {
   return (
-    <header className="fixed top-0 inset-x-0 z-30 bg-white shadow-md">
-      <div className="w-full flex items-center justify-between h-40 px-8">
-        
-        {/* ✅ التبويبات (يسار) */}
-        <nav className="flex items-center">
-          <ul className="flex gap-10 font-medium text-lg">
-            <li>
-              <Link to="/rooms" className="text-black hover:text-blue-800 transition">
-                الغرف الفندقية
-              </Link>
-            </li>
-            <li>
-              <Link to="/villas" className="text-black hover:text-blue-800 transition">
-                الفلل والأجنحة الفندقية
-              </Link>
-            </li>
-            <li>
-              <Link to="/services" className="text-black hover:text-blue-800 transition">
-                المرافق والخدمات
-              </Link>
-            </li>
-          </ul>
-        </nav>
-
-        {/* ✅ النص + الشعار (وسط) */}
-        <Link to="/" className="flex items-center gap-1">
-          <img
-            src="/logo-text.png"
-            alt="Moon Garden Text"
-            className="h-[300px] object-contain"
-          />
+    <header className="fixed inset-x-0 top-0 z-30 border-b border-black/5 bg-white/95 shadow-sm backdrop-blur">
+      <div className="mx-auto grid h-20 max-w-6xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-8 lg:px-10">
+        <Link to="/" className="flex items-center justify-self-start">
           <img
             src="/logo.png"
             alt="Moon Garden Logo"
-            className="h-[160px] w-auto object-contain"
+            className="h-10 w-auto object-contain lg:h-12"
           />
         </Link>
 
-        {/* ✅ دخول الإدارة (يمين) */}
-        <div className="flex items-center">
+        <Link to="/" className="flex items-center justify-self-center">
+          <img
+            src="/logo-text.png"
+            alt="Moon Garden Text"
+            className="h-7 w-auto object-contain lg:h-8"
+          />
+        </Link>
+
+        <div className="flex items-center justify-self-end gap-6">
+          <nav aria-label="القائمة الرئيسية" className="flex items-center">
+            <ul className="flex items-center gap-6 text-sm font-medium text-gray-900">
+              <li>
+                <Link to="/rooms" className="transition hover:text-blue-800">
+                  الغرف الفندقية
+                </Link>
+              </li>
+              <li>
+                <Link to="/villas" className="transition hover:text-blue-800">
+                  الفلل والأجنحة الفندقية
+                </Link>
+              </li>
+              <li>
+                <Link to="/services" className="transition hover:text-blue-800">
+                  المرافق والخدمات
+                </Link>
+              </li>
+            </ul>
+          </nav>
+
           <Link
             to="/admin"
-            className="bg-black text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition"
+            className="rounded-full border border-gray-900 px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-900 hover:text-white"
           >
             دخول الإدارة
           </Link>
