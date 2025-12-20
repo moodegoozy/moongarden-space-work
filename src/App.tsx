@@ -96,7 +96,7 @@ export default function App() {
                 من المسابح الهادئة إلى الصالات الرياضية الحديثة،
                 مرورًا بالجلسات الخارجية والإطلالات الساحرة.
               </p>
-              <button className="bg-black text-white px-6 py-3 rounded-lg w-fit hover:bg-gray-800 transition">
+              <button className="bg-[#2B2A28] text-white px-6 py-3 rounded-lg w-fit border-2 border-transparent hover:border-[var(--accent)] hover:shadow-lg transition">
                 احجز الآن
               </button>
             </div>

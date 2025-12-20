@@ -22,19 +22,19 @@ export default function Navbar() {
 
         <div className="flex items-center justify-self-end gap-6">
           <nav aria-label="القائمة الرئيسية" className="flex items-center">
-            <ul className="flex items-center gap-6 text-sm font-medium text-gray-900">
+            <ul className="flex items-center gap-6 text-sm font-medium text-[#2B2A28]">
               <li>
-                <Link to="/rooms" className="transition hover:text-blue-800">
+                <Link to="/rooms" className="transition hover:text-[var(--accent)] hover:underline">
                   الغرف الفندقية
                 </Link>
               </li>
               <li>
-                <Link to="/villas" className="transition hover:text-blue-800">
+                <Link to="/villas" className="transition hover:text-[var(--accent)] hover:underline">
                   الفلل والأجنحة الفندقية
                 </Link>
               </li>
               <li>
-                <Link to="/services" className="transition hover:text-blue-800">
+                <Link to="/services" className="transition hover:text-[var(--accent)] hover:underline">
                   المرافق والخدمات
                 </Link>
               </li>
@@ -43,7 +43,7 @@ export default function Navbar() {
 
           <Link
             to="/admin"
-            className="rounded-full border border-gray-900 px-4 py-2 text-sm font-medium text-gray-900 transition hover:bg-gray-900 hover:text-white"
+            className="rounded-full px-4 py-2 text-sm font-medium bg-[#2B2A28] text-[var(--accent)] transition hover:opacity-90 border-2 border-transparent hover:border-[var(--accent)]"
           >
             دخول الإدارة
           </Link>

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom"
 import { db } from "@/firebase"
 import { collection, getDocs } from "firebase/firestore"
 import FancySearch from "@/components/FancySearch"
+import MapSection from "@/components/MapSection"
 
 // مصادر الصور
 const heroImg = "/banner-fixed.png"
@@ -82,14 +83,14 @@ export default function MoonGardenAman() {
           </div>
 
           {/* روابط التنقل */}
-          <nav className="hidden md:flex items-center gap-6 text-sm">
-            <Link to="/rooms" className="hover:text-[#5E5B53]">
+          <nav className="hidden md:flex items-center gap-6 text-sm text-[#2B2A28]">
+            <Link to="/rooms" className="hover:text-[var(--accent)] hover:underline">
               الأجنحة والغرف الفندقية
             </Link>
-            <Link to="/villas" className="hover:text-[#5E5B53]">
+            <Link to="/villas" className="hover:text-[var(--accent)] hover:underline">
               الشاليهات
             </Link>
-            <Link to="/amenities" className="hover:text-[#5E5B53]">
+            <Link to="/amenities" className="hover:text-[var(--accent)] hover:underline">
               المرافق والخدمات
             </Link>
           </nav>
@@ -193,30 +194,34 @@ export default function MoonGardenAman() {
         </div>
       </section>
 
+      {/* الخريطة التفاعلية */}
+      {/* Coordinates: 17.253845, 42.616934 */}
+      <MapSection lat={17.253845} lng={42.616934} />
+
       {/* الفوتر */}
       <footer className="bg-[#FAF8F3] border-t border-[#E8E1D6]">
         <div className="max-w-7xl mx-auto px-4 py-12 grid md:grid-cols-4 gap-8">
           <div>
             <img src="/logo.png" alt="Moon Garden logo" className="w-12 h-12 object-contain mb-3" />
-            <p className="text-sm text-[#7C7469] mt-3">
+            <p className="text-sm text-[var(--muted)] mt-3">
               ملاذٌ خاص بإيقاع هادئ، حيث الأناقة الطبيعية تحيط بك من كل جانب.
             </p>
           </div>
           <div>
             <p className="font-semibold mb-3">روابط</p>
-            <ul className="space-y-2 text-sm text-[#7C7469]">
+            <ul className="space-y-2 text-sm text-[var(--muted)]">
               <li>
-                <Link to="/rooms" className="hover:text-[#5E5B53]">
+                <Link to="/rooms" className="hover:text-[var(--accent)] hover:underline">
                   الأجنحة والغرف الفندقية
                 </Link>
               </li>
               <li>
-                <Link to="/villas" className="hover:text-[#5E5B53]">
+                <Link to="/villas" className="hover:text-[var(--accent)] hover:underline">
                   الشاليهات
                 </Link>
               </li>
               <li>
-                <Link to="/amenities" className="hover:text-[#5E5B53]">
+                <Link to="/amenities" className="hover:text-[var(--accent)] hover:underline">
                   المرافق والخدمات
                 </Link>
               </li>
@@ -227,7 +232,7 @@ export default function MoonGardenAman() {
             <ul className="space-y-2 text-sm text-[#7C7469]">
               <li>
                 الهاتف:{" "}
-                <a href="tel:+966573878878" className="hover:text-[#5E5B53]">
+                <a href="tel:+966573878878" className="hover:text-[var(--accent)]">
                   0573878878
                 </a>
               </li>
@@ -241,7 +246,7 @@ export default function MoonGardenAman() {
             </ul>
           </div>
         </div>
-        <div className="text-center text-xs text-[#7C7469] py-6 border-t border-[#E8E1D6]">
+        <div className="text-center text-xs text-[var(--muted)] py-6 border-t border-[#E8E1D6]">
           © {new Date().getFullYear()} Moon Garden – جميع الحقوق محفوظة.
         </div>
       </footer>
