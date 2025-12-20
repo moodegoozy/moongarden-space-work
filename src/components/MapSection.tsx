@@ -1,9 +1,12 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import L from "leaflet"
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png"
-import markerIcon from "leaflet/dist/images/marker-icon.png"
-import markerShadow from "leaflet/dist/images/marker-shadow.png"
+
+
+// حل متوافق مع Vite/ESM لاستيراد صور أيقونات leaflet
+const markerIcon2x = new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href;
+const markerIcon = new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href;
+const markerShadow = new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href;
 
 // Fix default marker icons for bundlers (Vite)
 L.Icon.Default.mergeOptions({

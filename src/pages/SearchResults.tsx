@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useSearchParams, Link } from "react-router-dom"
 import { db } from "@/firebase"
 import { collection, getDocs } from "firebase/firestore"
 
@@ -103,7 +103,7 @@ export default function SearchResults() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-16">
-      <h2 className="text-2xl font-bold mb-8 text-right text-gray-800">
+      <h2 className="text-2xl font-bold mb-8 text-right golden-banner-title">
         النتائج المتاحة {checkIn && checkOut ? `من ${checkIn} إلى ${checkOut}` : ""}
       </h2>
 
@@ -114,13 +114,22 @@ export default function SearchResults() {
           {results.map((r) => (
             <div
               key={r.id}
-              className="bg-white border rounded-xl shadow hover:shadow-lg transition overflow-hidden"
+              className="bg-white border rounded-xl shadow hover:shadow-lg transition overflow-hidden flex flex-col"
             >
               <img src={r.images?.[0] || "/placeholder.png"} alt={r.name} className="w-full h-56 object-cover" />
-              <div className="p-4 text-right">
-                <h3 className="font-bold text-lg mb-1">{r.name}</h3>
-                <p className="text-gray-600 mb-1">{r.status}</p>
-                <p className="text-black font-semibold">{r.price} ريال / الليلة</p>
+              <div className="p-4 text-right flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-bold text-lg mb-1">{r.name}</h3>
+                  <p className="text-gray-600 mb-1">{r.status}</p>
+                  <p className="text-black font-semibold">{r.price} ريال / الليلة</p>
+                </div>
+                <Link
+                  to={`/book?unitId=${r.id}`}
+                  className="mt-4 block w-full text-center bg-gradient-to-l from-[#C6A76D] to-[#A48E78] text-white font-bold py-2 rounded-full shadow hover:opacity-90 transition-colors text-lg"
+                  style={{letterSpacing: '0.04em'}}
+                >
+                  احجز الآن
+                </Link>
               </div>
             </div>
           ))}

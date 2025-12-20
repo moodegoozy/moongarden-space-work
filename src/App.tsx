@@ -14,6 +14,7 @@ import Villas from "./pages/Villas"
 import UnitDetails from "./pages/UnitDetails"
 import SearchResults from "./pages/SearchResults"
 import Review from "./pages/Review"
+import BookingPage from "./pages/BookingPage"
 import Amenities from "./pages/Amenities" // ✅ صفحة المرافق الجديدة
 
 // ✅ الصفحة الرئيسية (ثيم موون قاردن)
@@ -133,6 +134,7 @@ export default function App() {
         <Route path="/:type/:id" element={<UnitDetails />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/review" element={<Review />} />
+        <Route path="/book" element={<BookingPage />} />
 
         {/* 🔐 صفحة تسجيل دخول الإدارة */}
         <Route path="/admin-login" element={<AdminLogin />} />

@@ -1,3 +1,13 @@
+/* عنوان بانر متدرج ذهبي فاخر */
+.golden-banner-title {
+  background: linear-gradient(90deg, #C6A76D 0%, #E2C891 50%, #A48E78 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  padding-bottom: 0.25em;
+  display: inline-block;
+}
 /* ✅ استدعاء أساسيات Tailwind */
 @tailwind base;
 @tailwind components;

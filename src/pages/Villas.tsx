@@ -139,8 +139,8 @@ export default function Villas() {
       {/* ✅ هيدر مطابق للرئيسية */}
       <header className="sticky top-0 z-30 bg-[#FAF8F3]/90 backdrop-blur border-b border-[#E8E1D6]">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Moon Garden logo" className="w-12 h-12 object-contain" />
+          <Link to="/" className="flex items-center gap-3 group">
+            <img src="/logo.png" alt="Moon Garden logo" className="w-12 h-12 object-contain group-hover:scale-105 transition" />
             <div>
               <h1
                 className="text-lg font-semibold tracking-tight"
@@ -150,13 +150,28 @@ export default function Villas() {
               </h1>
               <p className="text-[11px] text-[#7C7469] -mt-1">HOTEL & RESIDENCE</p>
             </div>
-          </div>
+          </Link>
 
+          {/* تبويبات سطح المكتب */}
           <nav className="hidden md:flex items-center gap-6 text-sm">
             <Link to="/rooms" className="hover:text-[#5E5B53]">الغرف الفندقية</Link>
             <Link to="/villas" className="hover:text-[#5E5B53]">الفلل والأجنحة الفندقية</Link>
-            <a href="#amenities" className="hover:text-[#5E5B53]">المرافق والخدمات</a>
+            <Link to="/amenities" className="hover:text-[#5E5B53]">المرافق والخدمات</Link>
           </nav>
+          {/* تبويبات الجوال */}
+          <div className="md:hidden relative">
+            <details className="relative">
+              <summary className="list-none cursor-pointer px-3 py-2 rounded-lg bg-[#E8E1D6] text-[#2B2A28] font-bold flex items-center gap-2 shadow-sm">
+                القائمة
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+              </summary>
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E8E1D6] rounded-lg shadow-lg z-50 text-right">
+                <Link to="/rooms" className="block px-4 py-3 hover:bg-[#F6F1E9]">الغرف الفندقية</Link>
+                <Link to="/villas" className="block px-4 py-3 hover:bg-[#F6F1E9]">الفلل والأجنحة الفندقية</Link>
+                <Link to="/amenities" className="block px-4 py-3 hover:bg-[#F6F1E9]">المرافق والخدمات</Link>
+              </div>
+            </details>
+          </div>
 
           <a
             id="book"
@@ -179,7 +194,7 @@ export default function Villas() {
           }}
         >
           <div className="text-center text-[#FAF8F3] px-4 drop-shadow-lg">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight golden-banner-title">
               الفلل والأجنحة الفندقية
             </h1>
             <p className="text-lg md:text-xl max-w-2xl mx-auto opacity-90 leading-relaxed">
@@ -193,6 +208,9 @@ export default function Villas() {
       <main className="flex-1 max-w-7xl mx-auto px-6 py-16">
         <h2 className="text-2xl md:text-3xl font-bold mb-10 text-center text-[#2B2A28]">
           اختر الفيلا أو الجناح المناسب لإقامتك
+        </h2>
+        <h2 className="text-2xl md:text-3xl font-bold mb-10 text-center golden-banner-title">
+          الشاليهات الفاخرة
         </h2>
 
         {villas.length === 0 ? (
@@ -222,7 +240,12 @@ export default function Villas() {
 
                   <div className="p-4 text-right">
                     <h3 className="font-semibold text-lg mb-1">{villa.name}</h3>
-                    <p className="text-[#7C7469] text-sm mb-2">📦 {villa.status}</p>
+                    <p className="text-[#7C7469] text-sm mb-2 flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="inline w-4 h-4 text-yellow-700 mb-0.5">
+                        <path d="M15.7 2.3a5 5 0 0 0-7.07 7.07l.35.35-6.36 6.36a1 1 0 0 0 0 1.42l1.42 1.42a1 1 0 0 0 1.42 0l6.36-6.36.35.35a5 5 0 1 0 7.07-7.07Zm-6.36 8.49 1.06-1.06 1.06 1.06-1.06 1.06-1.06-1.06ZM14 7a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
+                      </svg>
+                      {villa.status}
+                    </p>
 
                     {discount ? (
                       <>

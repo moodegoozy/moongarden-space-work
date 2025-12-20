@@ -1,9 +1,10 @@
+import HotelSearchBar from "@/components/HotelSearchBar"
 // src/pages/MoonGardenAman.tsx
 import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { db } from "@/firebase"
 import { collection, getDocs } from "firebase/firestore"
-import FancySearch from "@/components/FancySearch"
+
 import MapSection from "@/components/MapSection"
 
 // مصادر الصور
@@ -82,7 +83,8 @@ export default function MoonGardenAman() {
             </div>
           </div>
 
-          {/* روابط التنقل */}
+
+          {/* تبويبات سطح المكتب */}
           <nav className="hidden md:flex items-center gap-6 text-sm text-[#2B2A28]">
             <Link to="/rooms" className="hover:text-[var(--accent)] hover:underline">
               الأجنحة والغرف الفندقية
@@ -94,6 +96,21 @@ export default function MoonGardenAman() {
               المرافق والخدمات
             </Link>
           </nav>
+          {/* تبويبات الجوال */}
+          <div className="md:hidden relative">
+            <details className="relative">
+              <summary className="list-none cursor-pointer px-3 py-2 rounded-lg bg-[#E8E1D6] text-[#2B2A28] font-bold flex items-center gap-2 shadow-sm">
+                القائمة
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+              </summary>
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E8E1D6] rounded-lg shadow-lg z-50 text-right">
+                <Link to="/rooms" className="block px-4 py-3 hover:bg-[#F6F1E9]">الأجنحة والغرف الفندقية</Link>
+                <Link to="/villas" className="block px-4 py-3 hover:bg-[#F6F1E9]">الشاليهات</Link>
+                <Link to="/amenities" className="block px-4 py-3 hover:bg-[#F6F1E9]">المرافق والخدمات</Link>
+                <Link to="/admin-login" className="block px-4 py-3 hover:bg-[#F6F1E9]">دخول الإدارة</Link>
+              </div>
+            </details>
+          </div>
 
           {/* ✅ زر دخول الإدارة */}
           <Link
@@ -114,7 +131,10 @@ export default function MoonGardenAman() {
           }}
         />
         <div className="relative max-w-7xl mx-auto px-4 pt-24 pb-56 text-[#FAF8F3]">
-          <h2 className="text-4xl md:text-6xl font-semibold leading-tight drop-shadow-lg">
+          <h2
+            className="text-4xl md:text-6xl font-semibold leading-tight drop-shadow-lg bg-gradient-to-l from-[#C6A76D] via-[#E2C891] to-[#A48E78] bg-clip-text text-transparent golden-banner-title"
+            style={{ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+          >
             سكينةٌ تامة… رفاهية طبيعية
           </h2>
           <p className="mt-5 max-w-2xl text-[#F0ECE5]/90 drop-shadow-md">
@@ -123,9 +143,12 @@ export default function MoonGardenAman() {
         </div>
       </section>
 
-      {/* صندوق البحث الفخم */}
-      <section className="-mt-20">
-        <FancySearch />
+
+      {/* شريط بحث فندقي كلاسيكي */}
+      <section className="z-20 relative max-w-3xl mx-auto w-full" style={{marginTop: '-48px', position: 'relative'}}>
+        <div className="pt-8 md:pt-10">
+          <HotelSearchBar />
+        </div>
       </section>
 
       {/* ✅ الغرف (مسحوبة من Firestore) */}
