@@ -2,15 +2,22 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { useState, useEffect } from "react"
 
+// ✅ المكونات العامة
 import Navbar from "./components/Navbar"
 import Hero from "./components/Hero"
 import SearchBox from "./components/SearchBox"
 import Footer from "./components/Footer"
+
+// ✅ الصفحات العامة
 import Rooms from "./pages/Rooms"
 import Villas from "./pages/Villas"
 import UnitDetails from "./pages/UnitDetails"
-import SearchResults from "./pages/SearchResults" // ✅ صفحة البحث الجديدة
+import SearchResults from "./pages/SearchResults"
 import Review from "./pages/Review"
+import Amenities from "./pages/Amenities" // ✅ صفحة المرافق الجديدة
+
+// ✅ الصفحة الرئيسية (ثيم موون قاردن)
+import MoonGardenAman from "./pages/MoonGardenAman"
 
 // ✅ Swiper
 import { Swiper, SwiperSlide } from "swiper/react"
@@ -44,123 +51,93 @@ export default function App() {
     return () => clearInterval(interval)
   }, [])
 
+  // ✅ واجهة كلاسيكية (اختيارية)
+  const ClassicHome = (
+    <div className="bg-white text-black min-h-screen flex flex-col">
+      <Navbar />
+      <Hero />
+
+      <section className="relative -mt-12 z-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <SearchBox />
+        </div>
+      </section>
+
+      <main className="flex-1 w-full py-16">
+        <Swiper
+          modules={[Autoplay, Pagination]}
+          autoplay={{ delay: 5000 }}
+          loop
+          pagination={{ clickable: true }}
+          className="w-full"
+        >
+          <SwiperSlide>
+            <div className="flex w-full h-[600px]">
+              {indexes.map((i, idx) => (
+                <img
+                  key={idx}
+                  src={`/${i}.png`}
+                  alt={`صورة ${i}`}
+                  className="w-1/4 h-full object-cover transition-all duration-700"
+                />
+              ))}
+            </div>
+          </SwiperSlide>
+        </Swiper>
+
+        <section className="bg-gray-50 py-12 mt-10">
+          <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+            <div className="flex flex-col justify-center text-right order-2 md:order-1">
+              <h2 className="text-2xl md:text-3xl font-bold text-black mb-4">
+                استمتع برفاهية لا مثيل لها
+              </h2>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                اكتشف مجموعة متنوعة من المرافق الترفيهية المصممة لراحتك،
+                من المسابح الهادئة إلى الصالات الرياضية الحديثة،
+                مرورًا بالجلسات الخارجية والإطلالات الساحرة.
+              </p>
+              <button className="bg-black text-white px-6 py-3 rounded-lg w-fit hover:bg-gray-800 transition">
+                احجز الآن
+              </button>
+            </div>
+            <div className="order-1 md:order-2">
+              <img
+                src="/1.png"
+                alt="إعلان ثابت"
+                className="w-full h-[350px] object-cover rounded-lg shadow-md"
+              />
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <Footer />
+    </div>
+  )
+
   return (
     <Router>
       <Routes>
-        {/* ✅ الصفحة الرئيسية */}
-        <Route
-          path="/"
-          element={
-            <div className="bg-white text-black min-h-screen flex flex-col">
-              <Navbar />
-              <Hero />
+        {/* 🏠 الصفحة الرئيسية */}
+        <Route path="/" element={<MoonGardenAman />} />
 
-              {/* ✅ صندوق البحث */}
-              <section className="relative -mt-12 z-20 px-4">
-                <div className="max-w-6xl mx-auto">
-                  <SearchBox />
-                </div>
-              </section>
+        {/* ✨ صفحة المرافق والخدمات */}
+        <Route path="/amenities" element={<Amenities />} />
 
-              <main className="flex-1 w-full py-16">
-                {/* ✅ البانر */}
-                <Swiper
-                  modules={[Autoplay, Pagination]}
-                  autoplay={{ delay: 5000 }}
-                  loop={true}
-                  pagination={{ clickable: true }}
-                  className="w-full"
-                >
-                  <SwiperSlide>
-                    <div className="flex w-full h-[600px]">
-                      {indexes.map((i, idx) => (
-                        <img
-                          key={idx}
-                          src={`/${i}.png`}
-                          alt={`صورة ${i}`}
-                          className="w-1/4 h-full object-cover transition-all duration-700"
-                        />
-                      ))}
-                    </div>
-                  </SwiperSlide>
-                </Swiper>
+        {/* الواجهة القديمة (اختيارية) */}
+        <Route path="/classic" element={ClassicHome} />
 
-                {/* ✅ إعلان 1 */}
-                <section className="bg-gray-50 py-12 mt-10">
-                  <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
-                    <div className="flex flex-col justify-center text-right order-2 md:order-1">
-                      <h2 className="text-2xl md:text-3xl font-bold text-black mb-4">
-                        استمتع برفاهية لا مثيل لها
-                      </h2>
-                      <p className="text-gray-600 mb-6 leading-relaxed">
-                        اكتشف مجموعة متنوعة من المرافق الترفيهية المصممة لراحتك،
-                        من المسابح الهادئة إلى الصالات الرياضية الحديثة،
-                        مرورًا بالجلسات الخارجية والإطلالات الساحرة.
-                      </p>
-                      <button className="bg-black text-white px-6 py-3 rounded-lg w-fit hover:bg-gray-800 transition">
-                        احجز الآن
-                      </button>
-                    </div>
-                    <div className="order-1 md:order-2">
-                      <img
-                        src="/1.png"
-                        alt="إعلان ثابت"
-                        className="w-full h-[350px] object-cover rounded-lg shadow-md"
-                      />
-                    </div>
-                  </div>
-                </section>
-
-                {/* ✅ إعلان 2 */}
-                <section className="bg-gray-50 py-12 mt-10">
-                  <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
-                    <div>
-                      <img
-                        src={`/${indexes[0]}.png`}
-                        alt={`صورة ${indexes[0]}`}
-                        className="w-full h-[350px] md:h-[400px] object-cover rounded-lg shadow-md transition-all duration-700"
-                      />
-                    </div>
-                    <div className="flex flex-col justify-center text-right">
-                      <h2 className="text-2xl md:text-3xl font-bold text-black mb-4">
-                        لحظات فريدة كل يوم
-                      </h2>
-                      <p className="text-gray-600 mb-6 leading-relaxed">
-                        نوفر لك أجواء استثنائية تجمع بين الراحة والرفاهية
-                        مع مرافق متكاملة تلبي احتياجات جميع أفراد العائلة.
-                      </p>
-                      <button className="bg-black text-white px-6 py-3 rounded-lg w-fit hover:bg-gray-800 transition">
-                        استكشف المزيد
-                      </button>
-                    </div>
-                  </div>
-                </section>
-              </main>
-
-              <Footer />
-            </div>
-          }
-        />
-
-        {/* ✅ صفحة الغرف الفندقية */}
+        {/* صفحات عامة */}
         <Route path="/rooms" element={<Rooms />} />
-
-        {/* ✅ صفحة الفلل والأجنحة */}
         <Route path="/villas" element={<Villas />} />
-
-        {/* ✅ تفاصيل الوحدة */}
         <Route path="/:type/:id" element={<UnitDetails />} />
-
-        {/* ✅ صفحة نتائج البحث */}
-        <Route path="/search" element={<SearchResults />} /> {/* ✅ جديد */}
-
-        {/* ✅ صفحة آراء العملاء */}
+        <Route path="/search" element={<SearchResults />} />
         <Route path="/review" element={<Review />} />
 
-        {/* ✅ تسجيل دخول الإدارة */}
-        <Route path="/admin" element={<AdminLogin />} />
+        {/* 🔐 صفحة تسجيل دخول الإدارة */}
+        <Route path="/admin-login" element={<AdminLogin />} />
 
-        {/* ✅ لوحة التحكم مع الحماية */}
+        {/* 🧭 لوحة التحكم (صفحات محمية) */}
         <Route
           path="/dashboard"
           element={
