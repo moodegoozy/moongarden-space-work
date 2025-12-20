@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-
+import FancySearch from "@/components/FancySearch"
 export default function Navbar() {
   return (
     <header className="fixed inset-x-0 top-0 z-30 border-b border-black/5 bg-white/95 shadow-sm backdrop-blur">
@@ -48,6 +48,11 @@ export default function Navbar() {
             دخول الإدارة
           </Link>
         </div>
+      </div>
+
+      {/* Search bar (compact) يظهر أسفل الشريط مباشرة */}
+      <div className="relative">
+        <FancySearch compact />
       </div>
     </header>
   )

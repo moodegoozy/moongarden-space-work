@@ -34,17 +34,11 @@ export default function Dashboard() {
         const bookingsSnap = await getDocs(collection(db, "bookings"))
         const totalBookings = bookingsSnap.size
 
-        const roomsQuery = query(
-          collection(db, "rooms"),
-          where("status", "==", "متاح")
-        )
+        const roomsQuery = query(collection(db, "rooms"), where("status", "==", "متاح"))
         const roomsSnap = await getDocs(roomsQuery)
         const availableRooms = roomsSnap.size
 
-        const offersQuery = query(
-          collection(db, "offers"),
-          where("status", "==", "نشط")
-        )
+        const offersQuery = query(collection(db, "offers"), where("status", "==", "نشط"))
         const offersSnap = await getDocs(offersQuery)
         const activeOffers = offersSnap.size
 
@@ -64,14 +58,14 @@ export default function Dashboard() {
     loadStats()
   }, [])
 
-  // ✅ تسجيل خروج
+  // ✅ تسجيل الخروج
   const handleLogout = async () => {
     try {
       await signOut(auth)
-      navigate("/admin")
+      navigate("/") // ✅ يرجع للصفحة الرئيسية بعد تسجيل الخروج
     } catch (err) {
-      console.error("خطأ أثناء تسجيل الخروج:", err)
-      alert("حدث خطأ أثناء تسجيل الخروج")
+      console.error("❌ خطأ أثناء تسجيل الخروج:", err)
+      alert("حدث خطأ أثناء تسجيل الخروج، حاول مرة أخرى.")
     }
   }
 
@@ -139,29 +133,21 @@ export default function Dashboard() {
                 <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-2xl shadow-lg p-6 transform hover:scale-[1.02] transition">
                   <h3 className="font-semibold mb-2 text-lg">إجمالي الحجوزات</h3>
                   <p className="text-4xl font-extrabold">{stats.totalBookings}</p>
-                  <p className="text-sm mt-2 text-blue-100">
-                    📅 عدد الحجوزات المسجلة
-                  </p>
+                  <p className="text-sm mt-2 text-blue-100">📅 عدد الحجوزات المسجلة</p>
                 </div>
 
                 {/* 🟩 الغرف المتاحة */}
                 <div className="bg-gradient-to-r from-green-500 to-green-700 text-white rounded-2xl shadow-lg p-6 transform hover:scale-[1.02] transition">
                   <h3 className="font-semibold mb-2 text-lg">الغرف المتاحة</h3>
-                  <p className="text-4xl font-extrabold">
-                    {stats.availableRooms}
-                  </p>
-                  <p className="text-sm mt-2 text-green-100">
-                    🏨 غرف جاهزة للحجز الآن
-                  </p>
+                  <p className="text-4xl font-extrabold">{stats.availableRooms}</p>
+                  <p className="text-sm mt-2 text-green-100">🏨 غرف جاهزة للحجز الآن</p>
                 </div>
 
                 {/* 🟣 العروض النشطة */}
                 <div className="bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-2xl shadow-lg p-6 transform hover:scale-[1.02] transition">
                   <h3 className="font-semibold mb-2 text-lg">العروض النشطة</h3>
                   <p className="text-4xl font-extrabold">{stats.activeOffers}</p>
-                  <p className="text-sm mt-2 text-purple-100">
-                    🎁 عروض حالية متاحة للعملاء
-                  </p>
+                  <p className="text-sm mt-2 text-purple-100">🎁 عروض حالية متاحة للعملاء</p>
                 </div>
               </div>
             )
