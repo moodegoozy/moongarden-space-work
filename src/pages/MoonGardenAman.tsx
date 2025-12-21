@@ -49,14 +49,15 @@ export default function MoonGardenAman() {
   return (
     <div dir="rtl" className="min-h-screen bg-[#F6F1E9] text-[#2B2A28]">
       {/* الشريط العلوي */}
-      <div className="w-full bg-[#A48E78] text-[#FAF8F3] text-xs">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-2">
-          <p className="opacity-90">موون قاردن – هدوء وفخامة طبيعية</p>
-          <div className="flex gap-4">
+      <div className="w-full bg-[#A48E78] text-[#FAF8F3] text-[10px] sm:text-xs">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-3 sm:px-4 py-2">
+          <p className="opacity-90 hidden sm:block">موون قاردن – هدوء وفخامة طبيعية</p>
+          <p className="opacity-90 sm:hidden">موون قاردن</p>
+          <div className="flex gap-3 sm:gap-4">
             <a href="tel:+966573878878" className="hover:underline">
               اتصل بنا
             </a>
-            <a href="#location" className="hover:underline">
+            <a href="#location" className="hover:underline hidden sm:inline">
               الموقع
             </a>
             <a href="#book" className="hover:underline">
@@ -68,18 +69,18 @@ export default function MoonGardenAman() {
 
       {/* ✅ الهيدر */}
       <header className="sticky top-0 z-30 bg-[#FAF8F3]/90 backdrop-blur border-b border-[#E8E1D6]">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           {/* شعار الفندق */}
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Moon Garden logo" className="w-12 h-12 object-contain" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <img src="/logo.png" alt="Moon Garden logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain" />
             <div>
               <h1
-                className="text-lg font-semibold tracking-tight"
+                className="text-sm sm:text-lg font-semibold tracking-tight"
                 style={{ fontFamily: "'Playfair Display','Noto Naskh Arabic',serif" }}
               >
                 MOON GARDEN
               </h1>
-              <p className="text-[11px] text-[#7C7469] -mt-1">HOTEL & RESIDENCE</p>
+              <p className="text-[9px] sm:text-[11px] text-[#7C7469] -mt-1">HOTEL & RESIDENCE</p>
             </div>
           </div>
 
@@ -103,7 +104,7 @@ export default function MoonGardenAman() {
                 القائمة
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
               </summary>
-              <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E8E1D6] rounded-lg shadow-lg z-50 text-right">
+              <div className="absolute left-0 mt-2 w-48 bg-white border border-[#E8E1D6] rounded-lg shadow-lg z-50 text-right">
                 <Link to="/rooms" className="block px-4 py-3 hover:bg-[#F6F1E9]">الأجنحة والغرف الفندقية</Link>
                 <Link to="/villas" className="block px-4 py-3 hover:bg-[#F6F1E9]">الشاليهات</Link>
                 <Link to="/amenities" className="block px-4 py-3 hover:bg-[#F6F1E9]">المرافق والخدمات</Link>
@@ -115,7 +116,7 @@ export default function MoonGardenAman() {
           {/* ✅ زر دخول الإدارة */}
           <Link
             to="/admin-login"
-            className="px-6 py-2.5 rounded-full bg-[#2B2A28] text-[#FAF8F3] text-sm hover:opacity-90 transition"
+            className="hidden md:inline-block px-4 lg:px-6 py-2 lg:py-2.5 rounded-full bg-[#2B2A28] text-[#FAF8F3] text-xs lg:text-sm hover:opacity-90 transition"
           >
             دخول الإدارة
           </Link>
@@ -123,21 +124,23 @@ export default function MoonGardenAman() {
       </header>
 
       {/* البانر الرئيسي */}
-      <section className="relative">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-fixed"
-          style={{
-            backgroundImage: `linear-gradient(rgba(31,30,28,0.55), rgba(31,30,28,0.15)), url('${heroImg}')`,
-          }}
+      <section className="relative min-h-[350px] sm:min-h-[450px] md:min-h-[550px] overflow-hidden">
+        {/* صورة الخلفية - تظهر كاملة على الجوال */}
+        <img
+          src={heroImg}
+          alt="Moon Garden Banner"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
-        <div className="relative max-w-7xl mx-auto px-4 pt-24 pb-56 text-[#FAF8F3]">
+        {/* طبقة التظليل */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[rgba(31,30,28,0.55)] via-[rgba(31,30,28,0.35)] to-[rgba(31,30,28,0.15)]" />
+        <div className="relative max-w-7xl mx-auto px-4 pt-16 sm:pt-24 pb-40 sm:pb-56 text-[#FAF8F3]">
           <h2
-            className="text-4xl md:text-6xl font-semibold leading-tight drop-shadow-lg bg-gradient-to-l from-[#C6A76D] via-[#E2C891] to-[#A48E78] bg-clip-text text-transparent golden-banner-title"
+            className="text-2xl sm:text-4xl md:text-6xl font-semibold leading-tight drop-shadow-lg bg-gradient-to-l from-[#C6A76D] via-[#E2C891] to-[#A48E78] bg-clip-text text-transparent golden-banner-title"
             style={{ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
           >
             سكينةٌ تامة… رفاهية طبيعية
           </h2>
-          <p className="mt-5 max-w-2xl text-[#F0ECE5]/90 drop-shadow-md">
+          <p className="mt-4 sm:mt-5 max-w-2xl text-sm sm:text-base text-[#F0ECE5]/90 drop-shadow-md">
             ملاذٌ هادئ يقدّم فيلات خاصة وتجارب عافية مستوحاة من الطبيعة في قلب جازان.
           </p>
         </div>
@@ -145,23 +148,23 @@ export default function MoonGardenAman() {
 
 
       {/* شريط بحث فندقي كلاسيكي */}
-      <section className="z-20 relative max-w-3xl mx-auto w-full" style={{marginTop: '-48px', position: 'relative'}}>
-        <div className="pt-8 md:pt-10">
+      <section className="z-20 relative max-w-3xl mx-auto w-full px-4" style={{marginTop: '-36px', position: 'relative'}}>
+        <div className="pt-6 md:pt-10">
           <HotelSearchBar />
         </div>
       </section>
 
       {/* ✅ الغرف (مسحوبة من Firestore) */}
-      <section id="stay" className="max-w-7xl mx-auto px-4 pt-24">
-        <h3 className="text-2xl md:text-3xl font-bold mb-2">الأجنحة والغرف الفندقية</h3>
-        <p className="text-[#7C7469] mb-6">اختر من مجموعتنا المتنوعة بما يناسبك.</p>
+      <section id="stay" className="max-w-7xl mx-auto px-4 pt-16 sm:pt-24">
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">الأجنحة والغرف الفندقية</h3>
+        <p className="text-[#7C7469] mb-6 text-sm sm:text-base">اختر من مجموعتنا المتنوعة بما يناسبك.</p>
 
         {loading ? (
           <p className="text-center text-[#7C7469]">جاري تحميل الغرف...</p>
         ) : rooms.length === 0 ? (
           <p className="text-center text-[#7C7469]">لا توجد غرف حالياً</p>
         ) : (
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {rooms.slice(0, 6).map((room) => (
               <article
                 key={room.id}
@@ -191,26 +194,26 @@ export default function MoonGardenAman() {
       </section>
 
       {/* ✅ قسم المرافق والخدمات (مختصر يؤدي للصفحة الكاملة) */}
-      <section id="amenities" className="max-w-7xl mx-auto px-4 py-20">
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          <div className="rounded-2xl overflow-hidden border border-[#E8E1D6]">
-            <img className="w-full h-full object-cover" src={wellnessImg} alt="المرافق" />
+      <section id="amenities" className="max-w-7xl mx-auto px-4 py-12 sm:py-20">
+        <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-center">
+          <div className="rounded-2xl overflow-hidden border border-[#E8E1D6] order-2 md:order-1">
+            <img className="w-full h-48 sm:h-full object-cover" src={wellnessImg} alt="المرافق" />
           </div>
-          <div>
-            <h3 className="text-2xl md:text-3xl font-bold">المرافق والخدمات</h3>
-            <p className="text-[#7C7469] mt-3">
+          <div className="order-1 md:order-2">
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold">المرافق والخدمات</h3>
+            <p className="text-[#7C7469] mt-3 text-sm sm:text-base">
               يقدم موون قاردن مجموعة من المرافق الراقية التي تشمل المسبح، المطعم، مركز اللياقة،
               قاعات الاجتماعات، ومناطق الجلسات الخارجية لإقامة مثالية مليئة بالراحة والاستجمام.
             </p>
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 to="/amenities"
-                className="px-6 py-3 rounded-full bg-[#2F2E2B] text-[#FAF8F3]"
+                className="px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-[#2F2E2B] text-[#FAF8F3] text-sm"
               >
-                استعرض جميع المرافق
+                استعرض المرافق
               </Link>
-              <a href="#stay" className="px-6 py-3 rounded-full border border-[#E8E1D6]">
-                استعرض الغرف
+              <a href="#stay" className="px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-[#E8E1D6] text-sm">
+                الغرف
               </a>
             </div>
           </div>
@@ -223,19 +226,19 @@ export default function MoonGardenAman() {
 
       {/* الفوتر */}
       <footer className="bg-[#FAF8F3] border-t border-[#E8E1D6]">
-        <div className="max-w-7xl mx-auto px-4 py-12 grid md:grid-cols-4 gap-8">
-          <div>
-            <img src="/logo.png" alt="Moon Garden logo" className="w-12 h-12 object-contain mb-3" />
-            <p className="text-sm text-[var(--muted)] mt-3">
-              ملاذٌ خاص بإيقاع هادئ، حيث الأناقة الطبيعية تحيط بك من كل جانب.
+        <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+          <div className="col-span-2 md:col-span-1">
+            <img src="/logo.png" alt="Moon Garden logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain mb-3" />
+            <p className="text-xs sm:text-sm text-[var(--muted)] mt-3">
+              ملاذٌ خاص بإيقاع هادئ، حيث الأناقة الطبيعية.
             </p>
           </div>
           <div>
-            <p className="font-semibold mb-3">روابط</p>
-            <ul className="space-y-2 text-sm text-[var(--muted)]">
+            <p className="font-semibold mb-2 sm:mb-3 text-sm">روابط</p>
+            <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-[var(--muted)]">
               <li>
                 <Link to="/rooms" className="hover:text-[var(--accent)] hover:underline">
-                  الأجنحة والغرف الفندقية
+                  الغرف
                 </Link>
               </li>
               <li>
@@ -245,31 +248,29 @@ export default function MoonGardenAman() {
               </li>
               <li>
                 <Link to="/amenities" className="hover:text-[var(--accent)] hover:underline">
-                  المرافق والخدمات
+                  المرافق
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <p className="font-semibold mb-3">التواصل</p>
-            <ul className="space-y-2 text-sm text-[#7C7469]">
+            <p className="font-semibold mb-2 sm:mb-3 text-sm">التواصل</p>
+            <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-[#7C7469]">
               <li>
-                الهاتف:{" "}
                 <a href="tel:+966573878878" className="hover:text-[var(--accent)]">
                   0573878878
                 </a>
               </li>
-              <li>الإيميل: moongarden95@gmail.com</li>
+              <li className="break-all">moongarden95@gmail.com</li>
               <li>
-                واتساب:{" "}
                 <a href="https://wa.me/966573878878" className="hover:text-[#5E5B53]">
-                  اضغط هنا
+                  واتساب
                 </a>
               </li>
             </ul>
           </div>
         </div>
-        <div className="text-center text-xs text-[var(--muted)] py-6 border-t border-[#E8E1D6]">
+        <div className="text-center text-[10px] sm:text-xs text-[var(--muted)] py-4 sm:py-6 border-t border-[#E8E1D6]">
           © {new Date().getFullYear()} Moon Garden – جميع الحقوق محفوظة.
         </div>
       </footer>

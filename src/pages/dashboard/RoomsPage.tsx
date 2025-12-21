@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import RoomCard from "../../components/RoomCard"
 import { db } from "@/firebase"
 import { collection, getDocs } from "firebase/firestore"
+import { Link } from "react-router-dom"
 
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<any[]>([])
@@ -25,16 +26,41 @@ export default function RoomsPage() {
   }, [])
 
   if (loading)
-    return <p className="text-center py-10 text-gray-500">⏳ جاري تحميل الغرف...</p>
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="w-12 h-12 border-4 border-[#C6A76D] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-[#7C7469]">جاري تحميل الغرف...</p>
+      </div>
+    )
 
   return (
-    <div className="p-6 text-right">
-      <h1 className="text-2xl font-bold mb-6">صفحة الغرف</h1>
+    <div className="text-right">
+      {/* العنوان */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-[#C6A76D] to-[#A48E78] rounded-xl flex items-center justify-center shadow-md">
+            <span className="text-xl">🏨</span>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-[#2B2A28]">عرض الغرف</h2>
+            <p className="text-sm text-[#7C7469]">{rooms.length} غرفة مسجلة</p>
+          </div>
+        </div>
+        <Link
+          to="/dashboard/rooms/manage"
+          className="bg-gradient-to-l from-[#C6A76D] to-[#A48E78] text-[#2B2A28] px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-all shadow-md flex items-center gap-2"
+        >
+          <span>🛠️</span> إدارة الغرف
+        </Link>
+      </div>
 
       {rooms.length === 0 ? (
-        <p className="text-gray-500">لا توجد غرف حالياً.</p>
+        <div className="text-center py-16 bg-[#FAF8F3] rounded-2xl border border-[#E8E1D6]">
+          <span className="text-5xl mb-4 block">🏨</span>
+          <p className="text-[#7C7469] text-lg">لا توجد غرف حالياً</p>
+        </div>
       ) : (
-        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {rooms.map((room) => (
             <RoomCard key={room.id} {...room} />
           ))}

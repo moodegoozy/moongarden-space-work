@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { useSearchParams, Link } from "react-router-dom"
 import { db } from "@/firebase"
 import { collection, getDocs } from "firebase/firestore"
+import Footer from "@/components/Footer"
 
 function toDate(val: any): Date | null {
   if (!val) return null
@@ -99,33 +100,70 @@ export default function SearchResults() {
     fetchData()
   }, [checkIn, checkOut, guests, type, q, minPrice, maxPrice])
 
-  if (loading) return <p className="text-center py-10">⏳ جاري البحث...</p>
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#F6F1E9]">
+      <p className="text-center text-[#7C7469] text-lg">⏳ جاري البحث...</p>
+    </div>
+  )
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16">
-      <h2 className="text-2xl font-bold mb-8 text-right golden-banner-title">
-        النتائج المتاحة {checkIn && checkOut ? `من ${checkIn} إلى ${checkOut}` : ""}
-      </h2>
+    <div dir="rtl" className="min-h-screen flex flex-col bg-[#F6F1E9] text-[#2B2A28]">
+      {/* هيدر */}
+      <header className="sticky top-0 z-30 bg-[#FAF8F3]/90 backdrop-blur border-b border-[#E8E1D6]">
+        <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+            <img src="/logo.png" alt="Moon Garden" className="w-10 h-10 sm:w-12 sm:h-12 object-contain group-hover:scale-105 transition" />
+            <div>
+              <h1 className="text-sm sm:text-lg font-semibold tracking-tight" style={{ fontFamily: "'Playfair Display','Noto Naskh Arabic',serif" }}>MOON GARDEN</h1>
+              <p className="text-[9px] sm:text-[11px] text-[#7C7469] -mt-1">HOTEL & RESIDENCE</p>
+            </div>
+          </Link>
+          <nav className="hidden md:flex items-center gap-6 text-sm">
+            <Link to="/rooms" className="hover:text-[#5E5B53]">الغرف الفندقية</Link>
+            <Link to="/villas" className="hover:text-[#5E5B53]">الفلل والأجنحة</Link>
+            <Link to="/amenities" className="hover:text-[#5E5B53]">المرافق</Link>
+          </nav>
+          <div className="md:hidden">
+            <details className="relative">
+              <summary className="list-none cursor-pointer px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-[#E8E1D6] text-[#2B2A28] font-bold flex items-center gap-1 text-sm">
+                القائمة
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+              </summary>
+              <div className="absolute left-0 mt-2 w-44 bg-white border border-[#E8E1D6] rounded-lg shadow-lg z-50 text-right text-sm">
+                <Link to="/rooms" className="block px-4 py-2.5 hover:bg-[#F6F1E9]">الغرف الفندقية</Link>
+                <Link to="/villas" className="block px-4 py-2.5 hover:bg-[#F6F1E9]">الفلل والأجنحة</Link>
+                <Link to="/amenities" className="block px-4 py-2.5 hover:bg-[#F6F1E9]">المرافق</Link>
+              </div>
+            </details>
+          </div>
+        </div>
+      </header>
 
-      {results.length === 0 ? (
-        <p className="text-gray-500 text-center">لا توجد وحدات مطابقة لمرشحات البحث</p>
-      ) : (
-        <div className="grid gap-10 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+      {/* المحتوى */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-16">
+        <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-right golden-banner-title">
+          النتائج المتاحة {checkIn && checkOut ? `من ${checkIn} إلى ${checkOut}` : ""}
+        </h2>
+
+        {results.length === 0 ? (
+          <p className="text-[#7C7469] text-center py-10">لا توجد وحدات مطابقة لمرشحات البحث</p>
+        ) : (
+          <div className="grid gap-6 sm:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {results.map((r) => (
             <div
               key={r.id}
-              className="bg-white border rounded-xl shadow hover:shadow-lg transition overflow-hidden flex flex-col"
+              className="bg-white border border-[#E8E1D6] rounded-xl shadow-sm hover:shadow-lg transition overflow-hidden flex flex-col"
             >
-              <img src={r.images?.[0] || "/placeholder.png"} alt={r.name} className="w-full h-56 object-cover" />
-              <div className="p-4 text-right flex-1 flex flex-col justify-between">
+              <img src={r.images?.[0] || "/placeholder.png"} alt={r.name} className="w-full h-48 sm:h-56 object-cover" />
+              <div className="p-3 sm:p-4 text-right flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-bold text-lg mb-1">{r.name}</h3>
-                  <p className="text-gray-600 mb-1">{r.status}</p>
-                  <p className="text-black font-semibold">{r.price} ريال / الليلة</p>
+                  <h3 className="font-bold text-base sm:text-lg mb-1">{r.name}</h3>
+                  <p className="text-[#7C7469] text-sm mb-1">{r.status}</p>
+                  <p className="text-[#2B2A28] font-semibold">{r.price} ريال / الليلة</p>
                 </div>
                 <Link
                   to={`/book?unitId=${r.id}`}
-                  className="mt-4 block w-full text-center bg-gradient-to-l from-[#C6A76D] to-[#A48E78] text-white font-bold py-2 rounded-full shadow hover:opacity-90 transition-colors text-lg"
+                  className="mt-3 sm:mt-4 block w-full text-center bg-gradient-to-l from-[#C6A76D] to-[#A48E78] text-white font-bold py-2 sm:py-2.5 rounded-full shadow hover:opacity-90 transition-colors text-sm sm:text-base"
                   style={{letterSpacing: '0.04em'}}
                 >
                   احجز الآن
@@ -135,6 +173,9 @@ export default function SearchResults() {
           ))}
         </div>
       )}
+      </main>
+
+      <Footer />
     </div>
   )
 }

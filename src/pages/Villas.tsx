@@ -138,37 +138,37 @@ export default function Villas() {
 
       {/* ✅ هيدر مطابق للرئيسية */}
       <header className="sticky top-0 z-30 bg-[#FAF8F3]/90 backdrop-blur border-b border-[#E8E1D6]">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 group">
-            <img src="/logo.png" alt="Moon Garden logo" className="w-12 h-12 object-contain group-hover:scale-105 transition" />
+        <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+            <img src="/logo.png" alt="Moon Garden logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain group-hover:scale-105 transition" />
             <div>
               <h1
-                className="text-lg font-semibold tracking-tight"
+                className="text-sm sm:text-lg font-semibold tracking-tight"
                 style={{ fontFamily: "'Playfair Display','Noto Naskh Arabic',serif" }}
               >
                 MOON GARDEN
               </h1>
-              <p className="text-[11px] text-[#7C7469] -mt-1">HOTEL & RESIDENCE</p>
+              <p className="text-[9px] sm:text-[11px] text-[#7C7469] -mt-1">HOTEL & RESIDENCE</p>
             </div>
           </Link>
 
           {/* تبويبات سطح المكتب */}
           <nav className="hidden md:flex items-center gap-6 text-sm">
             <Link to="/rooms" className="hover:text-[#5E5B53]">الغرف الفندقية</Link>
-            <Link to="/villas" className="hover:text-[#5E5B53]">الفلل والأجنحة الفندقية</Link>
+            <Link to="/villas" className="hover:text-[#5E5B53] font-semibold text-[#C6A76D]">الفلل والأجنحة الفندقية</Link>
             <Link to="/amenities" className="hover:text-[#5E5B53]">المرافق والخدمات</Link>
           </nav>
           {/* تبويبات الجوال */}
           <div className="md:hidden relative">
             <details className="relative">
-              <summary className="list-none cursor-pointer px-3 py-2 rounded-lg bg-[#E8E1D6] text-[#2B2A28] font-bold flex items-center gap-2 shadow-sm">
+              <summary className="list-none cursor-pointer px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-[#E8E1D6] text-[#2B2A28] font-bold flex items-center gap-1 shadow-sm text-sm">
                 القائمة
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
               </summary>
-              <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E8E1D6] rounded-lg shadow-lg z-50 text-right">
-                <Link to="/rooms" className="block px-4 py-3 hover:bg-[#F6F1E9]">الغرف الفندقية</Link>
-                <Link to="/villas" className="block px-4 py-3 hover:bg-[#F6F1E9]">الفلل والأجنحة الفندقية</Link>
-                <Link to="/amenities" className="block px-4 py-3 hover:bg-[#F6F1E9]">المرافق والخدمات</Link>
+              <div className="absolute left-0 mt-2 w-44 bg-white border border-[#E8E1D6] rounded-lg shadow-lg z-50 text-right text-sm">
+                <Link to="/rooms" className="block px-4 py-2.5 hover:bg-[#F6F1E9]">الغرف الفندقية</Link>
+                <Link to="/villas" className="block px-4 py-2.5 hover:bg-[#F6F1E9] font-semibold text-[#C6A76D]">الفلل والأجنحة الفندقية</Link>
+                <Link to="/amenities" className="block px-4 py-2.5 hover:bg-[#F6F1E9]">المرافق والخدمات</Link>
               </div>
             </details>
           </div>
@@ -177,7 +177,7 @@ export default function Villas() {
             id="book"
             href="https://wa.me/966500000000"
             target="_blank"
-            className="px-6 py-2.5 rounded-full bg-[#2F2E2B] text-[#FAF8F3] text-sm hover:opacity-90 transition"
+            className="hidden sm:block px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-[#2F2E2B] text-[#FAF8F3] text-xs sm:text-sm hover:opacity-90 transition"
           >
             احجز الآن
           </a>
@@ -187,17 +187,17 @@ export default function Villas() {
       {/* ✅ بانر مطابق للغرف */}
       {!isDashboard && (
         <section
-          className="relative h-[480px] bg-cover bg-center flex items-center justify-center"
+          className="relative h-[280px] sm:h-[380px] md:h-[480px] bg-cover bg-center flex items-center justify-center"
           style={{
             backgroundImage:
               "linear-gradient(rgba(31,30,28,0.55), rgba(31,30,28,0.15)), url('/banner-fixed.png')",
           }}
         >
           <div className="text-center text-[#FAF8F3] px-4 drop-shadow-lg">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight golden-banner-title">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4 tracking-tight golden-banner-title">
               الفلل والأجنحة الفندقية
             </h1>
-            <p className="text-lg md:text-xl max-w-2xl mx-auto opacity-90 leading-relaxed">
+            <p className="text-sm sm:text-lg md:text-xl max-w-2xl mx-auto opacity-90 leading-relaxed">
               استمتع بإقامة فاخرة تجمع بين الراحة والخصوصية في Moon Garden.
             </p>
           </div>
@@ -205,18 +205,18 @@ export default function Villas() {
       )}
 
       {/* ✅ عرض الفلل */}
-      <main className="flex-1 max-w-7xl mx-auto px-6 py-16">
-        <h2 className="text-2xl md:text-3xl font-bold mb-10 text-center text-[#2B2A28]">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
+        <h2 className="text-lg sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-center text-[#2B2A28]">
           اختر الفيلا أو الجناح المناسب لإقامتك
         </h2>
-        <h2 className="text-2xl md:text-3xl font-bold mb-10 text-center golden-banner-title">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-10 text-center golden-banner-title">
           الشاليهات الفاخرة
         </h2>
 
         {villas.length === 0 ? (
           <p className="text-center text-[#7C7469]">لا توجد فلل حالياً</p>
         ) : (
-          <div className="grid gap-10 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-4 sm:gap-6 md:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {villas.map((villa) => {
               const discount = getDiscountedPrice(villa)
               return (

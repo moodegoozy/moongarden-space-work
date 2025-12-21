@@ -158,175 +158,224 @@ export default function OffersPage() {
   }
 
   if (loading)
-    return <p className="text-center p-6">⏳ جاري تحميل البيانات...</p>
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="w-12 h-12 border-4 border-[#C6A76D] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-[#7C7469]">جاري تحميل العروض...</p>
+      </div>
+    )
 
   return (
-    <div className="p-8 text-right">
-      <div className="flex justify-between mb-6">
-        <h1 className="text-2xl font-bold">إدارة العروض</h1>
+    <div className="text-right">
+      {/* العنوان */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-[#AB47BC] to-[#7B1FA2] rounded-xl flex items-center justify-center shadow-md">
+            <span className="text-xl">🎁</span>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-[#2B2A28]">إدارة العروض</h2>
+            <p className="text-sm text-[#7C7469]">{offers.length} عرض مسجل</p>
+          </div>
+        </div>
         <button
           onClick={handleAdd}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          className="bg-gradient-to-l from-[#7CB342] to-[#558B2F] text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-all shadow-md flex items-center gap-2"
         >
-          ➕ إضافة عرض
+          <span>➕</span> إضافة عرض
         </button>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {offers.map((offer) => {
-          const relatedUnit = units.find((u) => u.id === offer.unitId)
-          return (
-            <div
-              key={offer.id}
-              className="bg-white shadow rounded-lg p-4 border hover:shadow-lg transition"
-            >
-              <h3 className="font-bold text-lg mb-1">{offer.name}</h3>
-              <p className="text-gray-600">💰 الخصم: {offer.discount}</p>
-              <p className="text-gray-600">
-                🏠 الوحدة:{" "}
-                {relatedUnit
-                  ? `${relatedUnit.type === "villa" ? "🏡" : "🛏️"} ${relatedUnit.name}`
-                  : "غير محددة"}
-              </p>
-              <p className="text-gray-600">
-                📅 {offer.startDate || "—"} إلى {offer.endDate || "—"}
-              </p>
-              <p
-                className={`text-sm font-bold ${
-                  offer.status === "منتهي" ? "text-red-600" : "text-green-600"
-                }`}
+        {offers.length === 0 ? (
+          <div className="col-span-full text-center py-16 bg-[#FAF8F3] rounded-2xl border border-[#E8E1D6]">
+            <span className="text-5xl mb-4 block">🎁</span>
+            <p className="text-[#7C7469] text-lg">لا توجد عروض حالياً</p>
+          </div>
+        ) : (
+          offers.map((offer) => {
+            const relatedUnit = units.find((u) => u.id === offer.unitId)
+            return (
+              <div
+                key={offer.id}
+                className="bg-white rounded-2xl shadow-lg border border-[#E8E1D6] p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
               >
-                ⚡ الحالة: {offer.status}
-              </p>
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[#AB47BC]/10 to-transparent rounded-bl-full"></div>
+                
+                <div className="flex items-start justify-between mb-4">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    offer.status === "منتهي" 
+                      ? "bg-red-100 text-red-700" 
+                      : "bg-green-100 text-green-700"
+                  }`}>
+                    {offer.status}
+                  </span>
+                  <h3 className="font-bold text-lg text-[#2B2A28]">{offer.name}</h3>
+                </div>
 
-              <div className="flex justify-between mt-3">
-                <button
-                  onClick={() => setEditingOffer(offer)}
-                  className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                >
-                  تعديل
-                </button>
-                <button
-                  onClick={() => handleDelete(offer.id)}
-                  className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-                >
-                  حذف
-                </button>
+                <div className="space-y-2 mb-4">
+                  <p className="text-[#7C7469] flex items-center justify-end gap-2">
+                    <span className="font-semibold text-[#C6A76D]">{offer.discount}{offer.discountType === "percent" ? "%" : " ريال"}</span>
+                    <span>💰 الخصم:</span>
+                  </p>
+                  <p className="text-[#7C7469] flex items-center justify-end gap-2">
+                    <span className="font-medium">
+                      {relatedUnit
+                        ? `${relatedUnit.type === "villa" ? "🏡" : "🛏️"} ${relatedUnit.name}`
+                        : "غير محددة"}
+                    </span>
+                    <span>🏠 الوحدة:</span>
+                  </p>
+                  <p className="text-[#7C7469] text-sm">
+                    📅 {offer.startDate || "—"} إلى {offer.endDate || "—"}
+                  </p>
+                </div>
+
+                <div className="flex gap-3 pt-4 border-t border-[#E8E1D6]">
+                  <button
+                    onClick={() => setEditingOffer(offer)}
+                    className="flex-1 bg-gradient-to-l from-[#C6A76D]/20 to-[#A48E78]/20 text-[#2B2A28] py-2 rounded-lg font-medium hover:from-[#C6A76D]/30 hover:to-[#A48E78]/30 transition-all"
+                  >
+                    ✏️ تعديل
+                  </button>
+                  <button
+                    onClick={() => handleDelete(offer.id)}
+                    className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg font-medium hover:bg-red-100 transition-all"
+                  >
+                    🗑️ حذف
+                  </button>
+                </div>
               </div>
-            </div>
-          )
-        })}
-
-        {offers.length === 0 && (
-          <p className="col-span-full text-center text-gray-500">
-            لا توجد عروض حالياً
-          </p>
+            )
+          })
         )}
       </div>
 
       {/* ✅ نافذة التعديل */}
       {editingOffer && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-full max-w-lg shadow-lg text-right">
-            <h2 className="text-xl font-bold mb-4">✏️ تعديل العرض</h2>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl text-right overflow-hidden">
+            {/* رأس النافذة */}
+            <div className="bg-gradient-to-l from-[#C6A76D] to-[#A48E78] p-5">
+              <h2 className="text-xl font-bold text-[#2B2A28]">✏️ تعديل العرض</h2>
+            </div>
 
-            <label className="block mb-2">اسم العرض:</label>
-            <input
-              value={editingOffer.name}
-              onChange={(e) =>
-                setEditingOffer({ ...editingOffer, name: e.target.value })
-              }
-              className="border w-full p-2 rounded mb-3"
-            />
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block mb-2 text-[#2B2A28] font-medium">اسم العرض:</label>
+                <input
+                  value={editingOffer.name}
+                  onChange={(e) =>
+                    setEditingOffer({ ...editingOffer, name: e.target.value })
+                  }
+                  className="border border-[#E8E1D6] w-full p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/50 focus:border-[#C6A76D]"
+                />
+              </div>
 
-            <label className="block mb-2">نسبة الخصم أو المبلغ:</label>
-            <input
-              value={editingOffer.discount}
-              onChange={(e) =>
-                setEditingOffer({ ...editingOffer, discount: e.target.value })
-              }
-              className="border w-full p-2 rounded mb-3"
-            />
+              <div>
+                <label className="block mb-2 text-[#2B2A28] font-medium">نسبة الخصم أو المبلغ:</label>
+                <input
+                  value={editingOffer.discount}
+                  onChange={(e) =>
+                    setEditingOffer({ ...editingOffer, discount: e.target.value })
+                  }
+                  className="border border-[#E8E1D6] w-full p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/50 focus:border-[#C6A76D]"
+                />
+              </div>
 
-            <label className="block mb-2">نوع الخصم:</label>
-            <select
-              value={editingOffer.discountType || "percent"}
-              onChange={(e) =>
-                setEditingOffer({ ...editingOffer, discountType: e.target.value })
-              }
-              className="border w-full p-2 rounded mb-3"
-            >
-              <option value="percent">٪ نسبة مئوية</option>
-              <option value="amount">💵 مبلغ ثابت</option>
-            </select>
+              <div>
+                <label className="block mb-2 text-[#2B2A28] font-medium">نوع الخصم:</label>
+                <select
+                  value={editingOffer.discountType || "percent"}
+                  onChange={(e) =>
+                    setEditingOffer({ ...editingOffer, discountType: e.target.value })
+                  }
+                  className="border border-[#E8E1D6] w-full p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/50 focus:border-[#C6A76D] bg-white"
+                >
+                  <option value="percent">٪ نسبة مئوية</option>
+                  <option value="amount">💵 مبلغ ثابت</option>
+                </select>
+              </div>
 
-            <label className="block mb-2">الوحدة المرتبطة:</label>
-            <select
-              value={
-                editingOffer.unitId
-                  ? `${editingOffer.unitId}|${editingOffer.unitType}`
-                  : ""
-              }
-              onChange={(e) => {
-                const [id, type] = e.target.value.split("|")
-                setEditingOffer({
-                  ...editingOffer,
-                  unitId: id,
-                  unitType: type,
-                })
-              }}
-              className="border w-full p-2 rounded mb-3"
-            >
-              <option value="">— اختر الوحدة —</option>
-              {units.map((u) => (
-                <option key={u.id} value={`${u.id}|${u.type}`}>
-                  {u.type === "villa" ? `🏡 ${u.name}` : `🛏️ ${u.name}`}
-                </option>
-              ))}
-            </select>
+              <div>
+                <label className="block mb-2 text-[#2B2A28] font-medium">الوحدة المرتبطة:</label>
+                <select
+                  value={
+                    editingOffer.unitId
+                      ? `${editingOffer.unitId}|${editingOffer.unitType}`
+                      : ""
+                  }
+                  onChange={(e) => {
+                    const [id, type] = e.target.value.split("|")
+                    setEditingOffer({
+                      ...editingOffer,
+                      unitId: id,
+                      unitType: type,
+                    })
+                  }}
+                  className="border border-[#E8E1D6] w-full p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/50 focus:border-[#C6A76D] bg-white"
+                >
+                  <option value="">— اختر الوحدة —</option>
+                  {units.map((u) => (
+                    <option key={u.id} value={`${u.id}|${u.type}`}>
+                      {u.type === "villa" ? `🏡 ${u.name}` : `🛏️ ${u.name}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <label className="block mb-2">تاريخ البداية:</label>
-            <input
-              type="date"
-              value={editingOffer.startDate || ""}
-              onChange={(e) =>
-                setEditingOffer({ ...editingOffer, startDate: e.target.value })
-              }
-              className="border w-full p-2 rounded mb-3"
-            />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block mb-2 text-[#2B2A28] font-medium">تاريخ البداية:</label>
+                  <input
+                    type="date"
+                    value={editingOffer.startDate || ""}
+                    onChange={(e) =>
+                      setEditingOffer({ ...editingOffer, startDate: e.target.value })
+                    }
+                    className="border border-[#E8E1D6] w-full p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/50 focus:border-[#C6A76D]"
+                  />
+                </div>
 
-            <label className="block mb-2">تاريخ النهاية:</label>
-            <input
-              type="date"
-              value={editingOffer.endDate || ""}
-              onChange={(e) =>
-                setEditingOffer({ ...editingOffer, endDate: e.target.value })
-              }
-              className="border w-full p-2 rounded mb-3"
-            />
+                <div>
+                  <label className="block mb-2 text-[#2B2A28] font-medium">تاريخ النهاية:</label>
+                  <input
+                    type="date"
+                    value={editingOffer.endDate || ""}
+                    onChange={(e) =>
+                      setEditingOffer({ ...editingOffer, endDate: e.target.value })
+                    }
+                    className="border border-[#E8E1D6] w-full p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/50 focus:border-[#C6A76D]"
+                  />
+                </div>
+              </div>
 
-            <label className="block mb-2">الحالة:</label>
-            <select
-              value={editingOffer.status}
-              onChange={(e) =>
-                setEditingOffer({ ...editingOffer, status: e.target.value })
-              }
-              className="border w-full p-2 rounded mb-4"
-            >
-              <option value="نشط">نشط</option>
-              <option value="منتهي">منتهي</option>
-            </select>
+              <div>
+                <label className="block mb-2 text-[#2B2A28] font-medium">الحالة:</label>
+                <select
+                  value={editingOffer.status}
+                  onChange={(e) =>
+                    setEditingOffer({ ...editingOffer, status: e.target.value })
+                  }
+                  className="border border-[#E8E1D6] w-full p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/50 focus:border-[#C6A76D] bg-white"
+                >
+                  <option value="نشط">نشط</option>
+                  <option value="منتهي">منتهي</option>
+                </select>
+              </div>
+            </div>
 
-            <div className="flex justify-between">
+            {/* أزرار الإجراء */}
+            <div className="flex gap-3 p-6 pt-0">
               <button
                 onClick={handleSave}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                className="flex-1 bg-gradient-to-l from-[#7CB342] to-[#558B2F] text-white py-3 rounded-xl font-semibold hover:opacity-90 transition-all shadow-md"
               >
                 💾 حفظ التعديلات
               </button>
               <button
                 onClick={() => setEditingOffer(null)}
-                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+                className="flex-1 bg-[#E8E1D6] text-[#2B2A28] py-3 rounded-xl font-semibold hover:bg-[#DDD5C7] transition-all"
               >
                 إلغاء
               </button>
