@@ -210,11 +210,11 @@ export default function Rooms() {
           الأجنحة والغرف الفندقية
         </h2>
 
-        {rooms.length === 0 ? (
+        {rooms.filter(r => r.status !== "مقفلة").length === 0 ? (
           <p className="text-center text-[#7C7469]">لا توجد غرف حالياً</p>
         ) : (
           <div className="grid gap-4 sm:gap-6 md:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {rooms.map((room) => {
+            {rooms.filter(r => r.status !== "مقفلة").map((room) => {
               const discount = getDiscountedPrice(room)
               return (
                 <div

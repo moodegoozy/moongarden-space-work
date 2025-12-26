@@ -213,11 +213,11 @@ export default function Villas() {
           الشاليهات الفاخرة
         </h2>
 
-        {villas.length === 0 ? (
+        {villas.filter(v => v.status !== "مقفلة").length === 0 ? (
           <p className="text-center text-[#7C7469]">لا توجد فلل حالياً</p>
         ) : (
           <div className="grid gap-4 sm:gap-6 md:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {villas.map((villa) => {
+            {villas.filter(v => v.status !== "مقفلة").map((villa) => {
               const discount = getDiscountedPrice(villa)
               return (
                 <div

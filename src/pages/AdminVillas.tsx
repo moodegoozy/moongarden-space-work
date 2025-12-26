@@ -1,308 +1,399 @@
 // src/pages/AdminVillas.tsx
 import { useEffect, useState } from "react"
-import { db, storage } from "@/firebase"
 import {
   collection,
   getDocs,
-  addDoc,
-  deleteDoc,
-  updateDoc,
   doc,
+  updateDoc,
+  deleteDoc,
+  addDoc,
 } from "firebase/firestore"
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
+import { db, storage } from "@/firebase"
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
 
 type Villa = {
-  id?: string
+  id: string
   name: string
+  unitNumber?: string
   price: number
-  status: "متاح" | "محجوز" | "مؤكد"
+  status: string
   description?: string
   images?: string[]
 }
 
 export default function AdminVillas() {
   const [villas, setVillas] = useState<Villa[]>([])
+  const [loading, setLoading] = useState(true)
   const [editingVilla, setEditingVilla] = useState<Villa | null>(null)
   const [newImages, setNewImages] = useState<FileList | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
-  // ✅ تحميل البيانات
+  // تصفية الفلل بناءً على البحث
+  const filteredVillas = villas.filter((villa) =>
+    villa.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (villa.unitNumber && villa.unitNumber.includes(searchQuery))
+  )
+
   useEffect(() => {
-    const loadVillas = async () => {
+    const fetchVillas = async () => {
       const snap = await getDocs(collection(db, "villas"))
-      const list = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Villa[]
-      setVillas(list)
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Villa))
+      setVillas(data)
+      setLoading(false)
     }
-    loadVillas()
+    fetchVillas()
   }, [])
 
-  // ✅ إضافة فيلا جديدة
   const handleAdd = async () => {
-    const newVilla: Villa = {
-      name: "فيلا جديدة",
-      price: 0,
+    const name = prompt("اسم الفيلا:")
+    if (!name) return
+    const price = Number(prompt("السعر بالريال:") || 0)
+    await addDoc(collection(db, "villas"), {
+      name,
+      price,
       status: "متاح",
       description: "",
       images: [],
-    }
-    await addDoc(collection(db, "villas"), newVilla)
+    })
+    alert("✅ تمت إضافة الفيلا بنجاح")
     window.location.reload()
   }
 
-  // ✅ نسخ فيلا (نسخة آمنة بدون خطأ)
-  const handleDuplicate = async (villa: Villa) => {
-    try {
-      // حذف id لو موجود
-      const { id, ...rest } = villa
-
-      // تجهيز النسخة الجديدة
-      const duplicatedVilla: Villa = {
-        ...rest,
-        name: `${villa.name} (نسخة)`,
-        price: Number(villa.price) || 0,
-        status: villa.status || "متاح",
-        description: villa.description || "",
-        images: villa.images ? [...villa.images] : [],
-      }
-
-      // إضافة النسخة الجديدة إلى قاعدة البيانات
-      await addDoc(collection(db, "villas"), duplicatedVilla)
-
-      alert("✅ تم نسخ الفيلا بنجاح")
-      window.location.reload()
-    } catch (error: any) {
-      console.error("❌ خطأ أثناء نسخ الفيلا:", error.message)
-      alert("❌ حدث خطأ أثناء نسخ الفيلا، تحقق من البيانات أو الصور")
-    }
-  }
-
-  // ✅ حذف فيلا كاملة
-  const handleDelete = async (id?: string) => {
-    if (!id) return
-    if (confirm("هل أنت متأكد من حذف هذه الفيلا؟")) {
-      await deleteDoc(doc(db, "villas", id))
-      setVillas(villas.filter((v) => v.id !== id))
-    }
-  }
-
-  // ✅ حذف صورة محددة من الفيلا
-  const handleDeleteImage = async (villa: Villa, imageUrl: string) => {
-    if (!villa.id || !villa.images) return
-
-    if (confirm("هل تريد حذف هذه الصورة؟")) {
-      try {
-        // حذف الصورة من Firebase Storage
-        const fileRef = ref(storage, imageUrl)
-        await deleteObject(fileRef)
-
-        // تحديث الصور في قاعدة البيانات
-        const updatedImages = villa.images.filter((img) => img !== imageUrl)
-        await updateDoc(doc(db, "villas", villa.id), { images: updatedImages })
-
-        // تحديث الحالة في الواجهة
-        setEditingVilla({ ...villa, images: updatedImages })
-        setVillas((prev) =>
-          prev.map((v) =>
-            v.id === villa.id ? { ...v, images: updatedImages } : v
-          )
-        )
-
-        alert("🗑️ تم حذف الصورة بنجاح")
-      } catch (error) {
-        console.error(error)
-        alert("حدث خطأ أثناء حذف الصورة")
-      }
-    }
-  }
-
-  // ✅ حفظ التعديلات
   const handleSave = async () => {
-    if (!editingVilla?.id) return
+    if (!editingVilla) return
+    setSaving(true)
 
-    let imageUrls = editingVilla.images || []
+    try {
+      let updatedImages = editingVilla.images || []
 
-    // ✅ رفع الصور الجديدة
-    if (newImages && newImages.length > 0) {
-      const uploadPromises = Array.from(newImages).map(async (file) => {
-        const imageRef = ref(storage, `villas/${editingVilla.id}-${file.name}`)
-        await uploadBytes(imageRef, file)
-        return await getDownloadURL(imageRef)
+      if (newImages && newImages.length > 0) {
+        const uploadPromises = Array.from(newImages).map(async (file) => {
+          const imageRef = ref(storage, `villas/${editingVilla.id}-${file.name}`)
+          await uploadBytes(imageRef, file)
+          return await getDownloadURL(imageRef)
+        })
+        const newUrls = await Promise.all(uploadPromises)
+        updatedImages = [...newUrls, ...updatedImages]
+      }
+
+      await updateDoc(doc(db, "villas", editingVilla.id), {
+        name: editingVilla.name,
+        unitNumber: editingVilla.unitNumber || "",
+        price: Number(editingVilla.price),
+        status: editingVilla.status,
+        description: editingVilla.description || "",
+        images: updatedImages,
       })
-      const uploadedUrls = await Promise.all(uploadPromises)
-      imageUrls = [...imageUrls, ...uploadedUrls]
-    }
 
-    const updated = {
-      ...editingVilla,
-      images: imageUrls,
-      price: Number(editingVilla.price),
+      setVillas((prev) =>
+        prev.map((v) => (v.id === editingVilla.id ? { ...editingVilla, images: updatedImages } : v))
+      )
+      alert("✅ تم حفظ التعديلات بنجاح")
+      setEditingVilla(null)
+      setNewImages(null)
+    } catch (err) {
+      console.error("خطأ:", err)
+      alert("حدث خطأ أثناء الحفظ")
+    } finally {
+      setSaving(false)
     }
-
-    await updateDoc(doc(db, "villas", editingVilla.id), updated)
-    setEditingVilla(null)
-    setNewImages(null)
-    window.location.reload()
   }
 
-  // ✅ واجهة العرض
+  const handleDelete = async (id: string) => {
+    if (!confirm("هل أنت متأكد من حذف هذه الفيلا؟")) return
+    await deleteDoc(doc(db, "villas", id))
+    setVillas(villas.filter((v) => v.id !== id))
+    alert("🗑️ تم حذف الفيلا")
+  }
+
+  const handleClone = async (villa: Villa) => {
+    try {
+      const { id, ...rest } = villa
+      await addDoc(collection(db, "villas"), { ...rest, name: `${villa.name} (نسخة)` })
+      alert("✅ تم استنساخ الفيلا بنجاح")
+      window.location.reload()
+    } catch {
+      alert("حدث خطأ أثناء الاستنساخ")
+    }
+  }
+
+  const statusConfig: Record<string, { bg: string; text: string; border: string }> = {
+    "متاح": { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
+    "محجوز": { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200" },
+    "مؤكد": { bg: "bg-sky-50", text: "text-sky-700", border: "border-sky-200" },
+    "مقفلة": { bg: "bg-gray-100", text: "text-gray-600", border: "border-gray-300" },
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="w-16 h-16 border-4 border-[#C6A76D] border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-[#7C7469] text-lg">جاري تحميل الفلل...</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen text-right">
-      <div className="flex justify-between mb-6 flex-wrap gap-4">
-        <h1 className="text-2xl font-bold">إدارة الفلل والأجنحة</h1>
+    <div className="text-right">
+      {/* الهيدر */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-[#C6A76D] to-[#8B7355] rounded-2xl flex items-center justify-center shadow-lg">
+            <span className="text-2xl">🏡</span>
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-[#2B2A28]">إدارة الفلل والأجنحة</h1>
+            <p className="text-[#7C7469] text-sm">{villas.length} فيلا/جناح مسجل في النظام</p>
+          </div>
+        </div>
         <button
           onClick={handleAdd}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          className="bg-gradient-to-l from-[#C6A76D] to-[#8B7355] text-white px-6 py-3 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-300 flex items-center gap-2 font-medium"
         >
-          ➕ إضافة فيلا
+          <span className="text-lg">➕</span>
+          <span>إضافة فيلا جديدة</span>
         </button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {villas.map((villa) => (
-          <div
-            key={villa.id}
-            className="bg-white shadow rounded-lg p-4 border hover:shadow-lg transition"
-          >
-            {/* ✅ عرض عدة صور */}
-            <div className="flex gap-2 overflow-x-auto mb-3">
-              {(villa.images || ["/placeholder.png"]).map((img, i) => (
-                <img
-                  key={i}
-                  src={img}
-                  alt={villa.name}
-                  className="w-24 h-24 object-cover rounded"
-                />
-              ))}
-            </div>
-
-            <h3 className="font-bold text-lg mb-1">{villa.name}</h3>
-            <p className="text-gray-600 mb-1">💰 {villa.price} ريال</p>
-            <p className="text-gray-600 mb-3">📦 {villa.status}</p>
-
-            <div className="flex justify-between gap-2">
-              <button
-                onClick={() => setEditingVilla(villa)}
-                className="bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700"
-              >
-                تعديل
-              </button>
-
-              <button
-                onClick={() => handleDuplicate(villa)}
-                className="bg-yellow-500 text-white px-3 py-2 rounded hover:bg-yellow-600"
-              >
-                نسخ
-              </button>
-
-              <button
-                onClick={() => handleDelete(villa.id)}
-                className="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700"
-              >
-                حذف
-              </button>
-            </div>
-          </div>
-        ))}
+      {/* حقل البحث */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <input
+            type="text"
+            placeholder="🔍 ابحث باسم الفيلا أو رقم الوحدة..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-5 py-3 pr-12 rounded-xl border-2 border-[#E8E1D6] bg-white text-right text-[#2B2A28] placeholder-[#A09B93] focus:border-[#C6A76D] focus:ring-2 focus:ring-[#C6A76D]/20 transition-all duration-300"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7C7469] hover:text-[#C6A76D] transition-colors"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <p className="text-sm text-[#7C7469] mt-2">
+            عرض {filteredVillas.length} من {villas.length} فيلا
+          </p>
+        )}
       </div>
 
-      {/* ✅ نافذة التعديل */}
-      {editingVilla && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg text-right">
-            <h2 className="text-xl font-bold mb-4">✏️ تعديل بيانات الفيلا</h2>
+      {/* البطاقات */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {filteredVillas.map((villa) => {
+          const firstImage = villa.images?.[0] || "/placeholder.png"
+          const status = statusConfig[villa.status] || statusConfig["متاح"]
 
-            <label className="block mb-2">اسم الفيلا:</label>
-            <input
-              value={editingVilla.name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setEditingVilla({ ...editingVilla, name: e.target.value })
-              }
-              className="border w-full p-2 rounded mb-3"
-            />
-
-            <label className="block mb-2">السعر:</label>
-            <input
-              type="number"
-              value={editingVilla.price}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setEditingVilla({
-                  ...editingVilla,
-                  price: Number(e.target.value),
-                })
-              }
-              className="border w-full p-2 rounded mb-3"
-            />
-
-            <label className="block mb-2">الحالة:</label>
-            <select
-              value={editingVilla.status}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                setEditingVilla({
-                  ...editingVilla,
-                  status: e.target.value as Villa["status"],
-                })
-              }
-              className="border w-full p-2 rounded mb-3"
+          return (
+            <div
+              key={villa.id}
+              className="bg-white rounded-2xl border border-[#E8E1D6] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group"
             >
-              <option value="متاح">متاح</option>
-              <option value="محجوز">محجوز</option>
-              <option value="مؤكد">مؤكد</option>
-            </select>
+              {/* الصورة */}
+              <div className="relative h-52 overflow-hidden">
+                <img
+                  src={firstImage}
+                  alt={villa.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  onError={(e) => ((e.target as HTMLImageElement).src = "/placeholder.png")}
+                />
+                {/* الحالة */}
+                <div className="absolute top-4 right-4">
+                  <span className={`px-4 py-1.5 rounded-full text-xs font-bold border ${status.bg} ${status.text} ${status.border} shadow-sm`}>
+                    {villa.status}
+                  </span>
+                </div>
+                {/* رقم الوحدة */}
+                {villa.unitNumber && (
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1.5 rounded-full text-xs font-bold bg-white/90 text-[#2B2A28] shadow-sm backdrop-blur-sm">
+                      🏷️ {villa.unitNumber}
+                    </span>
+                  </div>
+                )}
+                {/* التدرج */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
 
-            <label className="block mb-2">الوصف:</label>
-            <textarea
-              value={editingVilla.description || ""}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                setEditingVilla({
-                  ...editingVilla,
-                  description: e.target.value,
-                })
-              }
-              className="border w-full p-2 rounded mb-3"
-            />
+              {/* المحتوى */}
+              <div className="p-5">
+                <h3 className="font-bold text-lg text-[#2B2A28] mb-2 line-clamp-1">{villa.name}</h3>
+                
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2 text-[#7C7469]">
+                    <span>💰</span>
+                    <span className="text-lg font-bold text-[#C6A76D]">{villa.price}</span>
+                    <span className="text-sm">ريال/الليلة</span>
+                  </div>
+                </div>
 
-            {/* ✅ عرض الصور الحالية + زر حذف */}
-            <label className="block mb-2">الصور الحالية:</label>
-            <div className="flex flex-wrap gap-3 mb-4">
-              {(editingVilla.images || []).map((img, i) => (
-                <div key={i} className="relative">
-                  <img
-                    src={img}
-                    alt={`صورة ${i + 1}`}
-                    className="w-24 h-24 object-cover rounded border"
-                  />
+                {/* الأزرار */}
+                <div className="flex gap-2">
                   <button
-                    onClick={() => handleDeleteImage(editingVilla, img)}
-                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700"
-                    title="حذف الصورة"
+                    onClick={() => setEditingVilla(villa)}
+                    className="flex-1 bg-[#2B2A28] text-white py-2.5 rounded-xl text-sm font-medium hover:bg-[#3d3c3a] transition-colors flex items-center justify-center gap-1.5"
                   >
-                    ✕
+                    <span>✏️</span>
+                    <span>تعديل</span>
+                  </button>
+                  <button
+                    onClick={() => handleClone(villa)}
+                    className="flex-1 bg-[#F6F1E9] text-[#2B2A28] py-2.5 rounded-xl text-sm font-medium hover:bg-[#E8E1D6] transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <span>📋</span>
+                    <span>نسخ</span>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(villa.id)}
+                    className="px-4 bg-red-50 text-red-600 py-2.5 rounded-xl text-sm font-medium hover:bg-red-100 transition-colors"
+                  >
+                    🗑️
                   </button>
                 </div>
-              ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {villas.length === 0 && (
+        <div className="text-center py-20 bg-[#FAF8F3] rounded-2xl border border-[#E8E1D6]">
+          <span className="text-6xl mb-4 block">🏡</span>
+          <p className="text-[#7C7469] text-lg">لا توجد فلل حالياً</p>
+          <button
+            onClick={handleAdd}
+            className="mt-4 bg-[#2B2A28] text-white px-6 py-2 rounded-xl hover:bg-[#3d3c3a] transition"
+          >
+            إضافة أول فيلا
+          </button>
+        </div>
+      )}
+
+      {/* نافذة التعديل */}
+      {editingVilla && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-[#FAF8F3] rounded-3xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* رأس النافذة */}
+            <div className="bg-gradient-to-l from-[#C6A76D] to-[#8B7355] p-6">
+              <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                <span className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">✏️</span>
+                <span>تعديل بيانات الفيلا</span>
+              </h3>
             </div>
 
-            {/* ✅ رفع صور جديدة */}
-            <label className="block mb-2">رفع صور جديدة:</label>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setNewImages(e.target.files)
-              }
-              className="mb-4"
-            />
+            {/* المحتوى */}
+            <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-[#2B2A28] mb-2">رقم الوحدة</label>
+                  <input
+                    type="text"
+                    value={editingVilla.unitNumber || ""}
+                    placeholder="مثال: V01"
+                    onChange={(e) => setEditingVilla({ ...editingVilla, unitNumber: e.target.value })}
+                    className="w-full border-2 border-[#E8E1D6] rounded-xl px-4 py-3 bg-white focus:outline-none focus:border-[#C6A76D] transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#2B2A28] mb-2">السعر (ريال)</label>
+                  <input
+                    type="number"
+                    value={editingVilla.price}
+                    onChange={(e) => setEditingVilla({ ...editingVilla, price: Number(e.target.value) })}
+                    className="w-full border-2 border-[#E8E1D6] rounded-xl px-4 py-3 bg-white focus:outline-none focus:border-[#C6A76D] transition-colors"
+                  />
+                </div>
+              </div>
 
-            <div className="flex justify-between">
+              <div>
+                <label className="block text-sm font-semibold text-[#2B2A28] mb-2">اسم الفيلا</label>
+                <input
+                  type="text"
+                  value={editingVilla.name}
+                  onChange={(e) => setEditingVilla({ ...editingVilla, name: e.target.value })}
+                  className="w-full border-2 border-[#E8E1D6] rounded-xl px-4 py-3 bg-white focus:outline-none focus:border-[#C6A76D] transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-[#2B2A28] mb-2">الحالة</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {["متاح", "محجوز", "مؤكد", "مقفلة"].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setEditingVilla({ ...editingVilla, status: s })}
+                      className={`py-3 rounded-xl font-medium transition-all ${
+                        editingVilla.status === s
+                          ? "bg-[#2B2A28] text-white shadow-lg"
+                          : "bg-white border-2 border-[#E8E1D6] text-[#7C7469] hover:border-[#C6A76D]"
+                      }`}
+                    >
+                      {s === "متاح" && "✅ "}{s === "محجوز" && "🔒 "}{s === "مؤكد" && "✔️ "}{s === "مقفلة" && "⛔ "}{s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-[#2B2A28] mb-2">الوصف</label>
+                <textarea
+                  value={editingVilla.description || ""}
+                  onChange={(e) => setEditingVilla({ ...editingVilla, description: e.target.value })}
+                  rows={3}
+                  className="w-full border-2 border-[#E8E1D6] rounded-xl px-4 py-3 bg-white focus:outline-none focus:border-[#C6A76D] transition-colors resize-none"
+                  placeholder="وصف مختصر للفيلا..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-[#2B2A28] mb-2">إضافة صور جديدة</label>
+                <label className="block border-2 border-dashed border-[#E8E1D6] rounded-xl p-6 text-center cursor-pointer hover:border-[#C6A76D] hover:bg-[#C6A76D]/5 transition-all">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => setNewImages(e.target.files)}
+                    className="hidden"
+                  />
+                  {newImages && newImages.length > 0 ? (
+                    <div className="text-[#C6A76D] font-medium">
+                      <span className="text-2xl mb-2 block">📷</span>
+                      تم اختيار {newImages.length} صورة
+                    </div>
+                  ) : (
+                    <div className="text-[#7C7469]">
+                      <span className="text-2xl mb-2 block">📷</span>
+                      اضغط لاختيار صور
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
+
+            {/* الأزرار */}
+            <div className="p-6 bg-white border-t border-[#E8E1D6] flex gap-3">
               <button
                 onClick={handleSave}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                disabled={saving}
+                className="flex-1 bg-gradient-to-l from-[#C6A76D] to-[#8B7355] text-white py-3.5 rounded-xl font-bold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                💾 حفظ التعديلات
+                {saving ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    جاري الحفظ...
+                  </span>
+                ) : (
+                  "💾 حفظ التعديلات"
+                )}
               </button>
               <button
-                onClick={() => setEditingVilla(null)}
-                className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500"
+                onClick={() => { setEditingVilla(null); setNewImages(null) }}
+                className="flex-1 bg-[#E8E1D6] text-[#2B2A28] py-3.5 rounded-xl font-bold hover:bg-[#d9d2c7] transition-colors"
               >
                 إلغاء
               </button>

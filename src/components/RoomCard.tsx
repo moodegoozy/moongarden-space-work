@@ -9,17 +9,18 @@ type Props = {
   id: string
   name: string
   price: number
-  status: "متاح" | "محجوز" | "مؤكد"
+  status: "متاح" | "محجوز" | "مؤكد" | "مقفلة"
   type?: "room" | "villa"
   images: string[]
 }
 
 export default function RoomCard({ id, name, price, status, type = "room", images }: Props) {
   // ✅ ألوان الحالة
-  const statusColors: Record<typeof status, string> = {
+  const statusColors: Record<string, string> = {
     "متاح": "text-green-600",
     "محجوز": "text-yellow-600",
     "مؤكد": "text-blue-600",
+    "مقفلة": "text-gray-500",
   }
 
   // ✅ تأكد من وجود صور صالحة

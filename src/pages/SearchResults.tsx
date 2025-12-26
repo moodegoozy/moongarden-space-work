@@ -69,6 +69,7 @@ export default function SearchResults() {
         // ✅ الآن نطبق الفلاتر: الحالة، السعر، الاسم، السعة، واستبعاد المحجوزين
         const allItems = toFetch.flatMap((f) => f.docs)
         const filtered = allItems
+          .filter((item) => item.status !== "مقفلة") // استبعاد المقفلة
           .filter((item) => item.status === "متاح")
           .filter((item) => {
             if (minPrice !== null && item.price != null && Number(item.price) < minPrice) return false
