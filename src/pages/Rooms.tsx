@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import Footer from "../components/Footer"
 import { db } from "@/firebase"
-import { collection, getDocs, addDoc, serverTimestamp } from "firebase/firestore"
-import { Swiper, SwiperSlide } from "swiper/react"
-import { Pagination } from "swiper/modules"
+import { collection, getDocs } from "firebase/firestore"
 import "swiper/css"
 import "swiper/css/pagination"
 
@@ -15,6 +13,7 @@ type Room = {
   status: "متاح" | "محجوز" | "مؤكد" | "مقفلة"
   description?: string
   images: string[]
+  unitNumber?: string
 }
 
 type Offer = {
@@ -26,19 +25,24 @@ type Offer = {
   status: string
 }
 
+// ✅ نوع مجمّع للعرض للعميل
+type RoomType = {
+  typeName: string
+  price: number
+  description: string
+  images: string[]
+  totalUnits: number
+  availableUnits: number
+  hasDiscount: boolean
+  discountInfo?: { discount: number; discountType: "percent" | "amount"; newPrice: number }
+}
+
 export default function Rooms() {
   const [rooms, setRooms] = useState<Room[]>([])
   const [offers, setOffers] = useState<Offer[]>([])
+  const [roomTypes, setRoomTypes] = useState<RoomType[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
-  const [showBookingForm, setShowBookingForm] = useState(false)
-  const [bookingData, setBookingData] = useState({
-    fullName: "",
-    phone: "",
-    checkIn: "",
-    checkOut: "",
-    guests: 1,
-  })
+  const navigate = useNavigate()
 
   const location = useLocation()
   const isDashboard = location.pathname.includes("/dashboard")
@@ -65,6 +69,7 @@ export default function Rooms() {
             status: room.status || "متاح",
             description: room.description || "",
             images,
+            unitNumber: room.unitNumber || "",
           } as Room
         })
 
@@ -74,6 +79,50 @@ export default function Rooms() {
 
         setRooms(roomsData)
         setOffers(offersData)
+
+        // ✅ تجميع الغرف حسب الاسم (النوع) - إخفاء الوحدات المقفلة
+        const grouped: Record<string, Room[]> = {}
+        roomsData.filter(r => r.status !== "مقفلة").forEach((room) => {
+          if (!grouped[room.name]) {
+            grouped[room.name] = []
+          }
+          grouped[room.name].push(room)
+        })
+
+        // ✅ تحويل لأنواع مجمّعة
+        const types: RoomType[] = Object.entries(grouped).map(([typeName, units]) => {
+          const firstUnit = units[0]
+          const availableUnits = units.filter(u => u.status === "متاح").length
+          
+          // البحث عن خصم لأي وحدة من هذا النوع
+          const unitWithOffer = units.find(u => offersData.some(o => o.unitId === u.id))
+          const offer = unitWithOffer ? offersData.find(o => o.unitId === unitWithOffer.id) : null
+          
+          let discountInfo = undefined
+          if (offer) {
+            const newPrice = offer.discountType === "percent"
+              ? firstUnit.price - firstUnit.price * (offer.discount / 100)
+              : firstUnit.price - offer.discount
+            discountInfo = {
+              discount: offer.discount,
+              discountType: offer.discountType,
+              newPrice,
+            }
+          }
+
+          return {
+            typeName,
+            price: firstUnit.price,
+            description: firstUnit.description || "",
+            images: firstUnit.images,
+            totalUnits: units.length,
+            availableUnits,
+            hasDiscount: !!offer,
+            discountInfo,
+          }
+        })
+
+        setRoomTypes(types)
       } catch (err) {
         console.error("❌ خطأ أثناء تحميل الغرف أو العروض:", err)
       } finally {
@@ -83,51 +132,9 @@ export default function Rooms() {
     fetchData()
   }, [])
 
-  // ✅ حساب السعر بعد الخصم
-  const getDiscountedPrice = (room: Room) => {
-    const offer = offers.find((o) => o.unitId === room.id)
-    if (!offer) return null
-
-    const { discount, discountType } = offer
-    const oldPrice = room.price
-    const newPrice =
-      discountType === "percent"
-        ? oldPrice - oldPrice * (discount / 100)
-        : oldPrice - discount
-
-    return { oldPrice, newPrice, offer }
-  }
-
-  // ✅ إرسال الحجز
-  const handleBookingSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedRoom) return
-
-    try {
-      await addDoc(collection(db, "bookings"), {
-        ...bookingData,
-        roomId: selectedRoom.id,
-        roomName: selectedRoom.name,
-        price: selectedRoom.price,
-        status: "جديد",
-        type: "room",
-        createdAt: serverTimestamp(),
-      })
-
-      alert("✅ تم إرسال طلب الحجز بنجاح! سيتم التواصل معك قريباً.")
-      setShowBookingForm(false)
-      setSelectedRoom(null)
-      setBookingData({
-        fullName: "",
-        phone: "",
-        checkIn: "",
-        checkOut: "",
-        guests: 1,
-      })
-    } catch (error) {
-      console.error("❌ خطأ أثناء إرسال الحجز:", error)
-      alert("حدث خطأ أثناء إرسال الحجز. حاول مرة أخرى.")
-    }
+  // ✅ الانتقال لصفحة تفاصيل نوع الوحدة
+  const handleTypeClick = (typeName: string) => {
+    navigate(`/room-type/${encodeURIComponent(typeName)}`)
   }
 
   if (loading)
@@ -204,224 +211,72 @@ export default function Rooms() {
         </section>
       )}
 
-      {/* ✅ عرض الغرف */}
+      {/* ✅ عرض أنواع الغرف (بطاقة واحدة لكل نوع) */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
         <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-10 text-center golden-banner-title">
           الأجنحة والغرف الفندقية
         </h2>
 
-        {rooms.filter(r => r.status !== "مقفلة").length === 0 ? (
+        {roomTypes.length === 0 ? (
           <p className="text-center text-[#7C7469]">لا توجد غرف حالياً</p>
         ) : (
           <div className="grid gap-4 sm:gap-6 md:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {rooms.filter(r => r.status !== "مقفلة").map((room) => {
-              const discount = getDiscountedPrice(room)
-              return (
-                <div
-                  key={room.id}
-                  onClick={() => setSelectedRoom(room)}
-                  className="cursor-pointer bg-white border border-[#E8E1D6] rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden relative"
-                >
-                  {discount && (
-                    <div className="absolute top-3 right-3 bg-green-700 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md">
-                      خصم {discount.offer.discount}
-                      {discount.offer.discountType === "percent" ? "%" : " ريال"}
-                    </div>
-                  )}
-
-                  <img
-                    src={room.images?.[0] || "/placeholder.png"}
-                    alt={room.name}
-                    className="w-full h-56 object-cover"
-                  />
-
-                  <div className="p-4 text-right">
-                    <h3 className="font-semibold text-lg mb-1">{room.name}</h3>
-                    <p className="text-[#7C7469] text-sm mb-2 flex items-center gap-1">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="inline w-4 h-4 text-yellow-700 mb-0.5">
-                        <path d="M15.7 2.3a5 5 0 0 0-7.07 7.07l.35.35-6.36 6.36a1 1 0 0 0 0 1.42l1.42 1.42a1 1 0 0 0 1.42 0l6.36-6.36.35.35a5 5 0 1 0 7.07-7.07Zm-6.36 8.49 1.06-1.06 1.06 1.06-1.06 1.06-1.06-1.06ZM14 7a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
-                      </svg>
-                      {room.status}
-                    </p>
-
-                    {discount ? (
-                      <>
-                        <p className="text-[#A48E78] line-through text-sm">
-                          {discount.oldPrice} ريال
-                        </p>
-                        <p className="text-green-700 font-bold text-lg">
-                          {discount.newPrice.toFixed(2)} ريال / الليلة 🎉
-                        </p>
-                      </>
-                    ) : (
-                      <p className="text-[#2B2A28] font-bold text-lg">
-                        {room.price} ريال / الليلة
-                      </p>
-                    )}
+            {roomTypes.map((roomType) => (
+              <div
+                key={roomType.typeName}
+                onClick={() => handleTypeClick(roomType.typeName)}
+                className="cursor-pointer bg-white border border-[#E8E1D6] rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden relative"
+              >
+                {/* شارة الخصم */}
+                {roomType.hasDiscount && roomType.discountInfo && (
+                  <div className="absolute top-3 right-3 bg-green-700 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
+                    خصم {roomType.discountInfo.discount}
+                    {roomType.discountInfo.discountType === "percent" ? "%" : " ريال"}
                   </div>
+                )}
+
+                {/* شارة عدد الوحدات المتاحة */}
+                <div className={`absolute top-3 left-3 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10 ${
+                  roomType.availableUnits > 0 ? "bg-[#C6A76D]" : "bg-red-600"
+                }`}>
+                  {roomType.availableUnits > 0 
+                    ? `${roomType.availableUnits} متاحة` 
+                    : "غير متاحة حالياً"}
                 </div>
-              )
-            })}
+
+                <img
+                  src={roomType.images?.[0] || "/placeholder.png"}
+                  alt={roomType.typeName}
+                  className="w-full h-56 object-cover"
+                />
+
+                <div className="p-4 text-right">
+                  <h3 className="font-semibold text-lg mb-1">{roomType.typeName}</h3>
+                  
+                  <p className="text-[#7C7469] text-sm mb-2">
+                    🛏️ {roomType.totalUnits} وحدات من هذا النوع
+                  </p>
+
+                  {roomType.hasDiscount && roomType.discountInfo ? (
+                    <>
+                      <p className="text-[#A48E78] line-through text-sm">
+                        {roomType.price} ريال
+                      </p>
+                      <p className="text-green-700 font-bold text-lg">
+                        {roomType.discountInfo.newPrice.toFixed(0)} ريال / الليلة 🎉
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-[#2B2A28] font-bold text-lg">
+                      {roomType.price} ريال / الليلة
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </main>
-
-      {/* ✅ نافذة التفاصيل */}
-      {selectedRoom && !showBookingForm && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#FAF8F3] rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto text-right relative border border-[#E8E1D6]">
-            {/* ✅ زر الإغلاق محسن */}
-            <button
-              onClick={() => setSelectedRoom(null)}
-              className="absolute top-3 left-3 sm:top-4 sm:left-4 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-[#2B2A28] text-white text-sm sm:text-lg font-bold hover:opacity-90 transition z-50"
-              title="إغلاق"
-            >
-              ✕
-            </button>
-
-            <Swiper pagination={{ clickable: true }} modules={[Pagination]} className="w-full h-[250px] sm:h-[350px] md:h-[400px] z-0">
-              {selectedRoom.images?.map((img, i) => (
-                <SwiperSlide key={i}>
-                  <img src={img} alt={selectedRoom.name} className="w-full h-[250px] sm:h-[350px] md:h-[400px] object-cover" />
-                </SwiperSlide>
-              ))}
-            </Swiper>
-
-            <div className="p-4 sm:p-6">
-              <h2 className="text-xl sm:text-2xl font-bold mb-2 text-[#2B2A28]">{selectedRoom.name}</h2>
-
-              <p className="text-[#2B2A28] mb-2 sm:mb-3 text-sm sm:text-base">
-                💰 السعر: {selectedRoom.price} ريال / الليلة
-              </p>
-
-              <p className="text-[#7C7469] mb-3 sm:mb-4 text-sm sm:text-base">
-                🏷️ الحالة:{" "}
-                <span
-                  className={
-                    selectedRoom.status === "متاح"
-                      ? "text-green-700"
-                      : selectedRoom.status === "محجوز"
-                      ? "text-yellow-600"
-                      : "text-blue-600"
-                  }
-                >
-                  {selectedRoom.status}
-                </span>
-              </p>
-
-              <p className="text-[#5E5B53] leading-relaxed mb-6">
-                {selectedRoom.description || "لا يوجد وصف لهذه الغرفة."}
-              </p>
-
-              <button
-                onClick={() => setShowBookingForm(true)}
-                className="bg-[#2B2A28] text-[#FAF8F3] px-6 py-3 rounded-full hover:opacity-90 transition"
-              >
-                احجز الآن
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ✅ نموذج الحجز */}
-      {selectedRoom && showBookingForm && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className="bg-[#FAF8F3] rounded-2xl shadow-2xl w-full max-w-lg mx-4 text-right p-6 relative border border-[#E8E1D6]">
-            <button
-              onClick={() => setShowBookingForm(false)}
-              className="absolute top-4 left-4 w-10 h-10 flex items-center justify-center rounded-full bg-[#2B2A28] text-white text-xl font-bold hover:opacity-90 transition shadow-md z-50"
-            >
-              ✕
-            </button>
-
-            <h2 className="text-2xl font-bold mb-4 text-[#2B2A28]">
-              🛏️ حجز {selectedRoom.name}
-            </h2>
-
-            <form onSubmit={handleBookingSubmit} className="space-y-4">
-              <div>
-                <label className="block mb-1 text-[#7C7469]">الاسم الكامل:</label>
-                <input
-                  type="text"
-                  required
-                  value={bookingData.fullName}
-                  onChange={(e) =>
-                    setBookingData({ ...bookingData, fullName: e.target.value })
-                  }
-                  className="border border-[#E8E1D6] w-full p-2 rounded bg-white"
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1 text-[#7C7469]">رقم الجوال:</label>
-                <input
-                  type="tel"
-                  required
-                  value={bookingData.phone}
-                  onChange={(e) =>
-                    setBookingData({ ...bookingData, phone: e.target.value })
-                  }
-                  className="border border-[#E8E1D6] w-full p-2 rounded bg-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block mb-1 text-[#7C7469]">تاريخ الوصول:</label>
-                  <input
-                    type="date"
-                    required
-                    value={bookingData.checkIn}
-                    onChange={(e) =>
-                      setBookingData({ ...bookingData, checkIn: e.target.value })
-                    }
-                    className="border border-[#E8E1D6] w-full p-2 rounded bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-1 text-[#7C7469]">تاريخ المغادرة:</label>
-                  <input
-                    type="date"
-                    required
-                    value={bookingData.checkOut}
-                    onChange={(e) =>
-                      setBookingData({
-                        ...bookingData,
-                        checkOut: e.target.value,
-                      })
-                    }
-                    className="border border-[#E8E1D6] w-full p-2 rounded bg-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block mb-1 text-[#7C7469]">عدد الأشخاص:</label>
-                <input
-                  type="number"
-                  min={1}
-                  value={bookingData.guests}
-                  onChange={(e) =>
-                    setBookingData({
-                      ...bookingData,
-                      guests: Number(e.target.value),
-                    })
-                  }
-                  className="border border-[#E8E1D6] w-full p-2 rounded bg-white"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-[#2B2A28] text-[#FAF8F3] py-3 rounded-full hover:opacity-90 transition"
-              >
-                تأكيد الحجز
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
 
       {!isDashboard && <Footer />}
     </div>

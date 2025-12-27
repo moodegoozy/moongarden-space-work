@@ -31,6 +31,10 @@ import AdminLogin from "./pages/AdminLogin"
 import Dashboard from "./pages/Dashboard"
 import ProtectedRoute from "./components/ProtectedRoute"
 
+// ✅ صفحات تفاصيل نوع الوحدة (للعميل)
+import RoomTypeDetails from "./pages/RoomTypeDetails"
+import VillaTypeDetails from "./pages/VillaTypeDetails"
+
 // ✅ صفحات فرعية للوحة التحكم
 import BookingsPage from "./pages/dashboard/BookingsPage"
 import RoomsPage from "./pages/dashboard/RoomsPage"
@@ -137,6 +141,8 @@ export default function App() {
         {/* صفحات عامة */}
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/villas" element={<Villas />} />
+        <Route path="/room-type/:typeName" element={<RoomTypeDetails />} />
+        <Route path="/villa-type/:typeName" element={<VillaTypeDetails />} />
         <Route path="/:type/:id" element={<UnitDetails />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/review" element={<Review />} />
