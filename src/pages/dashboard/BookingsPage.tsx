@@ -25,6 +25,7 @@ type Booking = {
   roomName?: string
   villaName?: string
   unitId?: string
+  unitNumber?: string
   status: string
   type: "room" | "villa"
   nationalId?: string
@@ -35,6 +36,9 @@ type Booking = {
 type Unit = {
   id: string
   name: string
+  unitNumber?: string
+  price: number
+  status: string
   type: "room" | "villa"
 }
 
@@ -81,6 +85,7 @@ export default function BookingsPage() {
             roomName: b.roomName,
             villaName: b.villaName,
             unitId: b.unitId,
+            unitNumber: b.unitNumber || "",
             status: b.status || "جديد",
             type: b.type || "room",
             nationalId: b.nationalId || "",
@@ -92,12 +97,26 @@ export default function BookingsPage() {
         })
         setBookings(data)
 
-        // جلب الوحدات (الغرف والفلل)
+        // جلب الوحدات (الغرف والفلل) مع أرقامها وحالتها
         const roomsSnap = await getDocs(collection(db, "rooms"))
         const villasSnap = await getDocs(collection(db, "villas"))
         const allUnits: Unit[] = [
-          ...roomsSnap.docs.map((d) => ({ id: d.id, name: d.data().name, type: "room" as const })),
-          ...villasSnap.docs.map((d) => ({ id: d.id, name: d.data().name, type: "villa" as const })),
+          ...roomsSnap.docs.map((d) => ({
+            id: d.id,
+            name: d.data().name,
+            unitNumber: d.data().unitNumber || "",
+            price: d.data().price || 0,
+            status: d.data().status || "متاح",
+            type: "room" as const,
+          })),
+          ...villasSnap.docs.map((d) => ({
+            id: d.id,
+            name: d.data().name,
+            unitNumber: d.data().unitNumber || "",
+            price: d.data().price || 0,
+            status: d.data().status || "متاح",
+            type: "villa" as const,
+          })),
         ]
         setUnits(allUnits)
       } catch (err) {
@@ -117,6 +136,15 @@ export default function BookingsPage() {
       const bookingRef = doc(db, "bookings", id)
       await updateDoc(bookingRef, { status: newStatus })
 
+      // إذا تم إلغاء الحجز، أعد الوحدة لمتاحة
+      const booking = bookings.find((b) => b.id === id)
+      if (newStatus === "ملغي" && booking?.unitId) {
+        const collectionName = booking.type === "room" ? "rooms" : "villas"
+        await updateDoc(doc(db, collectionName, booking.unitId), {
+          status: "متاح",
+        })
+      }
+
       setBookings((prev) =>
         prev.map((b) => (b.id === id ? { ...b, status: newStatus } : b))
       )
@@ -130,19 +158,77 @@ export default function BookingsPage() {
     }
   }
 
-  // ✅ إنشاء حجز يدوي
+  // ✅ الحصول على الوحدات المتاحة فقط حسب النوع
+  const getAvailableUnits = (type: "room" | "villa") => {
+    return units.filter((u) => u.type === type && u.status === "متاح")
+  }
+
+  // ✅ اختيار وحدة تلقائياً عند تغيير النوع
+  const handleTypeChange = (type: "room" | "villa") => {
+    const availableUnits = getAvailableUnits(type)
+    const firstAvailable = availableUnits[0]
+    setManualForm({
+      ...manualForm,
+      type,
+      unitId: firstAvailable?.id || "",
+      price: firstAvailable?.price || 0,
+    })
+  }
+
+  // ✅ تحديث السعر عند تغيير الوحدة
+  const handleUnitChange = (unitId: string) => {
+    const selectedUnit = units.find((u) => u.id === unitId)
+    setManualForm({
+      ...manualForm,
+      unitId,
+      price: selectedUnit?.price || 0,
+    })
+  }
+
+  // ✅ الحصول على رقم الوحدة من الحجز
+  const getUnitDisplay = (booking: Booking) => {
+    const unitName = booking.roomName || booking.villaName || "—"
+    const unitNumber = booking.unitNumber
+    if (unitNumber) {
+      return `${unitName} (رقم ${unitNumber})`
+    }
+    return unitName
+  }
+
+  // ✅ إنشاء حجز يدوي مع تغيير حالة الوحدة لمحجوزة
   const handleManualBooking = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
       const selectedUnit = units.find((u) => u.id === manualForm.unitId)
+      
+      if (!selectedUnit) {
+        alert("❌ يرجى اختيار وحدة")
+        return
+      }
+
+      // التحقق من أن الوحدة متاحة
+      if (selectedUnit.status !== "متاح") {
+        alert("❌ هذه الوحدة غير متاحة حالياً")
+        return
+      }
+
+      // إنشاء الحجز مع رقم الوحدة
       await addDoc(collection(db, "bookings"), {
         ...manualForm,
-        roomName: manualForm.type === "room" ? selectedUnit?.name : undefined,
-        villaName: manualForm.type === "villa" ? selectedUnit?.name : undefined,
-        status: "جديد",
+        unitNumber: selectedUnit.unitNumber,
+        roomName: manualForm.type === "room" ? selectedUnit.name : undefined,
+        villaName: manualForm.type === "villa" ? selectedUnit.name : undefined,
+        status: "مؤكد",
         createdAt: serverTimestamp(),
       })
-      alert("✅ تم إنشاء الحجز بنجاح")
+
+      // ✅ تغيير حالة الوحدة إلى "محجوز"
+      const collectionName = manualForm.type === "room" ? "rooms" : "villas"
+      await updateDoc(doc(db, collectionName, manualForm.unitId), {
+        status: "محجوز",
+      })
+
+      alert(`✅ تم إنشاء الحجز بنجاح\n🏠 الوحدة رقم: ${selectedUnit.unitNumber || "—"}`)
       setShowManualForm(false)
       setManualForm({
         fullName: "",
@@ -265,26 +351,34 @@ export default function BookingsPage() {
                   <select
                     required
                     value={manualForm.type}
-                    onChange={(e) => setManualForm({ ...manualForm, type: e.target.value as "room" | "villa", unitId: "" })}
+                    onChange={(e) => handleTypeChange(e.target.value as "room" | "villa")}
                     className="w-full border border-[#E8E1D6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/50"
                   >
-                    <option value="room">غرفة</option>
-                    <option value="villa">فيلا</option>
+                    <option value="room">غرفة ({getAvailableUnits("room").length} متاحة)</option>
+                    <option value="villa">فيلا ({getAvailableUnits("villa").length} متاحة)</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[#7C7469] mb-1">اختر الوحدة *</label>
+                  <label className="block text-sm font-medium text-[#7C7469] mb-1">
+                    اختر الوحدة المتاحة *
+                    <span className="text-green-600 mr-2">({getAvailableUnits(manualForm.type).length} متاحة)</span>
+                  </label>
                   <select
                     required
                     value={manualForm.unitId}
-                    onChange={(e) => setManualForm({ ...manualForm, unitId: e.target.value })}
+                    onChange={(e) => handleUnitChange(e.target.value)}
                     className="w-full border border-[#E8E1D6] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/50"
                   >
-                    <option value="">-- اختر --</option>
-                    {units.filter((u) => u.type === manualForm.type).map((u) => (
-                      <option key={u.id} value={u.id}>{u.name}</option>
+                    <option value="">-- اختر وحدة متاحة --</option>
+                    {getAvailableUnits(manualForm.type).map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name} {u.unitNumber ? `(رقم ${u.unitNumber})` : ""} - {u.price} ريال/ليلة
+                      </option>
                     ))}
                   </select>
+                  {getAvailableUnits(manualForm.type).length === 0 && (
+                    <p className="text-red-500 text-xs mt-1">⚠️ لا توجد وحدات متاحة من هذا النوع</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-[#7C7469] mb-1">تاريخ الوصول *</label>
@@ -500,7 +594,12 @@ export default function BookingsPage() {
                     </span>
                   </td>
                   <td className="py-4 px-4 border-b border-[#E8E1D6]">
-                    {b.roomName || b.villaName || "—"}
+                    <div className="flex flex-col">
+                      <span className="font-medium">{b.roomName || b.villaName || "—"}</span>
+                      {b.unitNumber && (
+                        <span className="text-xs text-[#C6A76D] font-bold">رقم {b.unitNumber}</span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-4 px-4 border-b border-[#E8E1D6]">{b.checkIn}</td>
                   <td className="py-4 px-4 border-b border-[#E8E1D6]">{b.checkOut}</td>
