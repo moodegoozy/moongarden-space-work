@@ -20,13 +20,16 @@ export default function Dashboard() {
 
   const links = [
     { to: "/dashboard", label: "📊 الإحصائيات", icon: "📊" },
+    { to: "/dashboard/front-desk", label: "🏨 الاستقبال", icon: "🏨" },
+    { to: "/dashboard/room-status", label: "🗂️ حالة الوحدات", icon: "🗂️" },
     { to: "/dashboard/bookings", label: "📅 الحجوزات", icon: "📅" },
-    { to: "/dashboard/rooms", label: "🏨 عرض الغرف", icon: "🏨" },
+    { to: "/dashboard/guests", label: "👥 سجل النزلاء", icon: "👥" },
+    { to: "/dashboard/invoices", label: "🧾 الفواتير", icon: "🧾" },
+    { to: "/dashboard/housekeeping", label: "🧹 التدبير المنزلي", icon: "🧹" },
+    { to: "/dashboard/reports", label: "📈 التقارير", icon: "📈" },
     { to: "/dashboard/rooms/manage", label: "🛠️ إدارة الغرف", icon: "🛠️" },
-    { to: "/dashboard/villas", label: "🏡 عرض الفلل", icon: "🏡" },
     { to: "/dashboard/villas/manage", label: "⚙️ إدارة الفلل", icon: "⚙️" },
     { to: "/dashboard/offers", label: "🎁 العروض", icon: "🎁" },
-    { to: "/dashboard/clients", label: "👥 العملاء", icon: "👥" },
   ]
 
   // ✅ تحميل الإحصائيات

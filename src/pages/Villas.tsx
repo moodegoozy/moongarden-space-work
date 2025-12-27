@@ -12,7 +12,7 @@ type Villa = {
   id: string
   name: string
   price: number
-  status: "متاح" | "محجوز" | "مؤكد"
+  status: "متاح" | "محجوز" | "مؤكد" | "مقفلة"
   description?: string
   images: string[]
 }

@@ -40,6 +40,12 @@ import VillasPage from "./pages/dashboard/VillasPage"
 import AdminVillas from "./pages/AdminVillas"
 import AdminRooms from "./pages/AdminRooms"
 import StatsDashboard from "./pages/dashboard/StatsDashboard"
+import FrontDesk from "./pages/dashboard/FrontDesk"
+import GuestsPage from "./pages/dashboard/GuestsPage"
+import RoomStatus from "./pages/dashboard/RoomStatus"
+import InvoicesPage from "./pages/dashboard/InvoicesPage"
+import HousekeepingPage from "./pages/dashboard/HousekeepingPage"
+import ReportsPage from "./pages/dashboard/ReportsPage"
 
 export default function App() {
   const [indexes, setIndexes] = useState([1, 2, 3, 4])
@@ -149,13 +155,19 @@ export default function App() {
           }
         >
           <Route index element={<StatsDashboard />} />
+          <Route path="front-desk" element={<FrontDesk />} />
+          <Route path="room-status" element={<RoomStatus />} />
           <Route path="bookings" element={<BookingsPage />} />
+          <Route path="guests" element={<GuestsPage />} />
           <Route path="rooms" element={<RoomsPage />} />
           <Route path="rooms/manage" element={<AdminRooms />} />
           <Route path="villas" element={<VillasPage />} />
           <Route path="villas/manage" element={<AdminVillas />} />
           <Route path="offers" element={<OffersPage />} />
           <Route path="clients" element={<ClientsPage />} />
+          <Route path="invoices" element={<InvoicesPage />} />
+          <Route path="housekeeping" element={<HousekeepingPage />} />
+          <Route path="reports" element={<ReportsPage />} />
         </Route>
       </Routes>
     </Router>

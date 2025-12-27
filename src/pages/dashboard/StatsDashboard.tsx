@@ -8,31 +8,54 @@ export default function StatsDashboard() {
   const [stats, setStats] = useState({
     totalBookings: 0,
     availableRooms: 0,
+    occupiedRooms: 0,
     activeOffers: 0,
     totalVillas: 0,
+    todayArrivals: 0,
+    todayDepartures: 0,
+    currentGuests: 0,
+    totalGuests: 0,
     loading: true,
   })
+
+  const today = new Date().toISOString().split("T")[0]
 
   useEffect(() => {
     const loadStats = async () => {
       try {
-        // ✅ إجمالي الحجوزات
+        // ✅ الحجوزات
         const bookingsSnap = await getDocs(collection(db, "bookings"))
-        const totalBookings = bookingsSnap.size
+        const bookings = bookingsSnap.docs.map((d) => d.data() as any)
+        const totalBookings = bookings.length
 
-        // ✅ الغرف المتاحة فقط
-        const roomsQuery = query(
-          collection(db, "rooms"),
-          where("status", "==", "متاح")
-        )
-        const roomsSnap = await getDocs(roomsQuery)
-        const availableRooms = roomsSnap.size
+        // الوصول اليوم
+        const todayArrivals = bookings.filter(
+          (b) => b.checkIn === today && b.status !== "مسجل دخول" && b.status !== "ملغي"
+        ).length
+
+        // المغادرة اليوم
+        const todayDepartures = bookings.filter(
+          (b) => b.checkOut === today && b.status === "مسجل دخول"
+        ).length
+
+        // النزلاء الحاليين
+        const currentGuests = bookings.filter((b) => b.status === "مسجل دخول").length
+
+        // إجمالي النزلاء (فريد بناءً على رقم الجوال)
+        const uniqueGuests = new Set(bookings.map((b) => b.phone).filter(Boolean))
+        const totalGuests = uniqueGuests.size
+
+        // ✅ الغرف
+        const roomsSnap = await getDocs(collection(db, "rooms"))
+        const rooms = roomsSnap.docs.map((d) => d.data() as any)
+        const availableRooms = rooms.filter((r) => r.status === "متاح").length
+        const occupiedRooms = rooms.filter((r) => r.status === "محجوز").length
 
         // ✅ الفلل
         const villasSnap = await getDocs(collection(db, "villas"))
         const totalVillas = villasSnap.size
 
-        // ✅ العروض النشطة (اختياري)
+        // ✅ العروض النشطة
         let activeOffers = 0
         try {
           const offersQuery = query(
@@ -48,8 +71,13 @@ export default function StatsDashboard() {
         setStats({
           totalBookings,
           availableRooms,
+          occupiedRooms,
           activeOffers,
           totalVillas,
+          todayArrivals,
+          todayDepartures,
+          currentGuests,
+          totalGuests,
           loading: false,
         })
       } catch (err) {
@@ -71,11 +99,38 @@ export default function StatsDashboard() {
   return (
     <div className="text-right">
       {/* العنوان */}
-      <div className="text-center mb-10">
+      <div className="text-center mb-8">
         <h1 className="text-3xl font-bold golden-banner-title mb-2" style={{ fontFamily: "'Playfair Display','Noto Naskh Arabic',serif" }}>
-          نظرة عامة على النظام
+          نظام إدارة الفندق - PMS
         </h1>
-        <p className="text-[#7C7469]">إحصائيات سريعة لأداء المنشأة</p>
+        <p className="text-[#7C7469]">
+          {new Date().toLocaleDateString("ar-SA", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+        </p>
+      </div>
+
+      {/* ملخص اليوم */}
+      <div className="bg-gradient-to-l from-[#2B2A28] to-[#3D3A36] rounded-2xl p-6 mb-8 text-white">
+        <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+          <span>📅</span> ملخص اليوم
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Link to="/dashboard/front-desk" className="bg-white/10 backdrop-blur rounded-xl p-4 text-center hover:bg-white/20 transition">
+            <p className="text-3xl font-bold text-green-400">{stats.todayArrivals}</p>
+            <p className="text-sm text-white/80">🚪 وصول اليوم</p>
+          </Link>
+          <Link to="/dashboard/front-desk" className="bg-white/10 backdrop-blur rounded-xl p-4 text-center hover:bg-white/20 transition">
+            <p className="text-3xl font-bold text-orange-400">{stats.todayDepartures}</p>
+            <p className="text-sm text-white/80">🚶 مغادرة اليوم</p>
+          </Link>
+          <Link to="/dashboard/front-desk" className="bg-white/10 backdrop-blur rounded-xl p-4 text-center hover:bg-white/20 transition">
+            <p className="text-3xl font-bold text-blue-400">{stats.currentGuests}</p>
+            <p className="text-sm text-white/80">🏠 نزيل حالياً</p>
+          </Link>
+          <Link to="/dashboard/room-status" className="bg-white/10 backdrop-blur rounded-xl p-4 text-center hover:bg-white/20 transition">
+            <p className="text-3xl font-bold text-[#C6A76D]">{stats.occupiedRooms}</p>
+            <p className="text-sm text-white/80">🛏️ غرفة مشغولة</p>
+          </Link>
+        </div>
       </div>
 
       {/* بطاقات الإحصائيات */}
@@ -104,27 +159,27 @@ export default function StatsDashboard() {
           </div>
         </div>
 
-        {/* الفلل */}
+        {/* النزلاء */}
         <div className="relative overflow-hidden bg-gradient-to-br from-[#FAF8F3] to-white rounded-2xl shadow-lg p-6 border border-[#E8E1D6] group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[#42A5F5]/20 to-transparent rounded-bl-full"></div>
           <div className="relative">
             <div className="w-12 h-12 bg-gradient-to-br from-[#42A5F5] to-[#1976D2] rounded-xl flex items-center justify-center shadow-md mb-4">
-              <span className="text-xl">🏡</span>
+              <span className="text-xl">👥</span>
             </div>
-            <p className="text-[#7C7469] text-sm font-medium mb-1">الفلل والشاليهات</p>
-            <p className="text-3xl font-bold text-[#1976D2]">{stats.totalVillas}</p>
+            <p className="text-[#7C7469] text-sm font-medium mb-1">إجمالي النزلاء</p>
+            <p className="text-3xl font-bold text-[#1976D2]">{stats.totalGuests}</p>
           </div>
         </div>
 
-        {/* العروض */}
+        {/* الفلل */}
         <div className="relative overflow-hidden bg-gradient-to-br from-[#FAF8F3] to-white rounded-2xl shadow-lg p-6 border border-[#E8E1D6] group hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[#AB47BC]/20 to-transparent rounded-bl-full"></div>
           <div className="relative">
             <div className="w-12 h-12 bg-gradient-to-br from-[#AB47BC] to-[#7B1FA2] rounded-xl flex items-center justify-center shadow-md mb-4">
-              <span className="text-xl">🎁</span>
+              <span className="text-xl">🏡</span>
             </div>
-            <p className="text-[#7C7469] text-sm font-medium mb-1">العروض النشطة</p>
-            <p className="text-3xl font-bold text-[#7B1FA2]">{stats.activeOffers}</p>
+            <p className="text-[#7C7469] text-sm font-medium mb-1">الفلل والشاليهات</p>
+            <p className="text-3xl font-bold text-[#7B1FA2]">{stats.totalVillas}</p>
           </div>
         </div>
       </div>
@@ -132,18 +187,18 @@ export default function StatsDashboard() {
       {/* روابط سريعة */}
       <div className="pt-8 border-t border-[#E8E1D6]">
         <h3 className="text-lg font-semibold text-[#2B2A28] mb-4">الإجراءات السريعة</h3>
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Link to="/dashboard/front-desk" className="flex items-center justify-center gap-2 bg-gradient-to-l from-green-500 to-green-600 text-white py-4 px-6 rounded-xl transition-all hover:shadow-lg hover:scale-[1.02]">
+            <span>🏨</span> الاستقبال
+          </Link>
           <Link to="/dashboard/bookings" className="flex items-center justify-center gap-2 bg-gradient-to-l from-[#C6A76D]/10 to-[#A48E78]/10 hover:from-[#C6A76D]/20 hover:to-[#A48E78]/20 text-[#2B2A28] py-4 px-6 rounded-xl transition-all border border-[#C6A76D]/30 hover:border-[#C6A76D]/50">
-            <span>📅</span> عرض الحجوزات
+            <span>📅</span> الحجوزات
           </Link>
-          <Link to="/dashboard/rooms/manage" className="flex items-center justify-center gap-2 bg-gradient-to-l from-[#C6A76D]/10 to-[#A48E78]/10 hover:from-[#C6A76D]/20 hover:to-[#A48E78]/20 text-[#2B2A28] py-4 px-6 rounded-xl transition-all border border-[#C6A76D]/30 hover:border-[#C6A76D]/50">
-            <span>🛠️</span> إدارة الغرف
+          <Link to="/dashboard/room-status" className="flex items-center justify-center gap-2 bg-gradient-to-l from-[#C6A76D]/10 to-[#A48E78]/10 hover:from-[#C6A76D]/20 hover:to-[#A48E78]/20 text-[#2B2A28] py-4 px-6 rounded-xl transition-all border border-[#C6A76D]/30 hover:border-[#C6A76D]/50">
+            <span>🗂️</span> حالة الوحدات
           </Link>
-          <Link to="/dashboard/villas/manage" className="flex items-center justify-center gap-2 bg-gradient-to-l from-[#C6A76D]/10 to-[#A48E78]/10 hover:from-[#C6A76D]/20 hover:to-[#A48E78]/20 text-[#2B2A28] py-4 px-6 rounded-xl transition-all border border-[#C6A76D]/30 hover:border-[#C6A76D]/50">
-            <span>🏡</span> إدارة الفلل
-          </Link>
-          <Link to="/dashboard/offers" className="flex items-center justify-center gap-2 bg-gradient-to-l from-[#C6A76D]/10 to-[#A48E78]/10 hover:from-[#C6A76D]/20 hover:to-[#A48E78]/20 text-[#2B2A28] py-4 px-6 rounded-xl transition-all border border-[#C6A76D]/30 hover:border-[#C6A76D]/50">
-            <span>🎁</span> إضافة عرض
+          <Link to="/dashboard/guests" className="flex items-center justify-center gap-2 bg-gradient-to-l from-[#C6A76D]/10 to-[#A48E78]/10 hover:from-[#C6A76D]/20 hover:to-[#A48E78]/20 text-[#2B2A28] py-4 px-6 rounded-xl transition-all border border-[#C6A76D]/30 hover:border-[#C6A76D]/50">
+            <span>👥</span> سجل النزلاء
           </Link>
         </div>
       </div>
