@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { db } from "@/firebase"
 import { collection, getDocs } from "firebase/firestore"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 type Client = {
   id: string
@@ -14,6 +15,8 @@ type Client = {
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -85,7 +88,7 @@ export default function ClientsPage() {
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {clients.map((client) => (
+          {paginateData(clients, currentPage, itemsPerPage).map((client) => (
             <div
               key={client.id}
               className="bg-white rounded-2xl shadow-lg border border-[#E8E1D6] p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
@@ -117,6 +120,12 @@ export default function ClientsPage() {
           ))}
         </div>
       )}
+      <Pagination
+        currentPage={currentPage}
+        totalItems={clients.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
     </div>
   )
 }

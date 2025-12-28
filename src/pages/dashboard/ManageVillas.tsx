@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { collection, getDocs, doc, updateDoc, deleteDoc, addDoc } from "firebase/firestore"
 import { db, storage } from "@/firebase"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 type Villa = {
   id: string
@@ -19,6 +20,8 @@ export default function ManageVillas() {
   const [editingVilla, setEditingVilla] = useState<Villa | null>(null)
   const [newImage, setNewImage] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
 
   useEffect(() => {
     const fetchVillas = async () => {
@@ -138,7 +141,7 @@ export default function ManageVillas() {
 
       {/* بطاقات الفلل */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {villas.map((villa) => (
+        {paginateData(villas, currentPage, itemsPerPage).map((villa) => (
           <div
             key={villa.id}
             className="bg-white rounded-2xl border border-[#E8E1D6] shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group"
@@ -199,6 +202,13 @@ export default function ManageVillas() {
           </div>
         ))}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalItems={villas.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* نافذة التعديل */}
       {editingVilla && (

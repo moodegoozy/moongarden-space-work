@@ -50,6 +50,9 @@ import RoomStatus from "./pages/dashboard/RoomStatus"
 import InvoicesPage from "./pages/dashboard/InvoicesPage"
 import HousekeepingPage from "./pages/dashboard/HousekeepingPage"
 import ReportsPage from "./pages/dashboard/ReportsPage"
+import SettingsPage from "./pages/dashboard/SettingsPage"
+import RateManagementPage from "./pages/dashboard/RateManagementPage"
+import ActivityLogPage from "./pages/dashboard/ActivityLogPage"
 
 export default function App() {
   const [indexes, setIndexes] = useState([1, 2, 3, 4])
@@ -174,6 +177,9 @@ export default function App() {
           <Route path="invoices" element={<InvoicesPage />} />
           <Route path="housekeeping" element={<HousekeepingPage />} />
           <Route path="reports" element={<ReportsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="rate-management" element={<RateManagementPage />} />
+          <Route path="activity-log" element={<ActivityLogPage />} />
         </Route>
       </Routes>
     </Router>

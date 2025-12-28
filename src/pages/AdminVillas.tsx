@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore"
 import { db, storage } from "@/firebase"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 type Villa = {
   id: string
@@ -28,6 +29,8 @@ export default function AdminVillas() {
   const [newImages, setNewImages] = useState<FileList | null>(null)
   const [saving, setSaving] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
 
   // تصفية الفلل بناءً على البحث
   const filteredVillas = villas.filter((villa) =>
@@ -184,7 +187,7 @@ export default function AdminVillas() {
 
       {/* البطاقات */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredVillas.map((villa) => {
+        {paginateData(filteredVillas, currentPage, itemsPerPage).map((villa) => {
           const firstImage = villa.images?.[0] || "/placeholder.png"
           const status = statusConfig[villa.status] || statusConfig["متاح"]
 
@@ -259,6 +262,13 @@ export default function AdminVillas() {
           )
         })}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredVillas.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {villas.length === 0 && (
         <div className="text-center py-20 bg-[#FAF8F3] rounded-2xl border border-[#E8E1D6]">

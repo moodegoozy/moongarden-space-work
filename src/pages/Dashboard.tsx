@@ -27,9 +27,12 @@ export default function Dashboard() {
     { to: "/dashboard/invoices", label: "🧾 الفواتير", icon: "🧾" },
     { to: "/dashboard/housekeeping", label: "🧹 التدبير المنزلي", icon: "🧹" },
     { to: "/dashboard/reports", label: "📈 التقارير", icon: "📈" },
+    { to: "/dashboard/rate-management", label: "💰 إدارة الأسعار", icon: "💰" },
+    { to: "/dashboard/activity-log", label: "📋 سجل النشاط", icon: "📋" },
     { to: "/dashboard/rooms/manage", label: "🛠️ إدارة الغرف", icon: "🛠️" },
     { to: "/dashboard/villas/manage", label: "⚙️ إدارة الفلل", icon: "⚙️" },
     { to: "/dashboard/offers", label: "🎁 العروض", icon: "🎁" },
+    { to: "/dashboard/settings", label: "⚙️ الإعدادات", icon: "⚙️" },
   ]
 
   // ✅ تحميل الإحصائيات

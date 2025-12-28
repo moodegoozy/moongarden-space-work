@@ -9,12 +9,15 @@ import {
   getDoc,
 } from "firebase/firestore"
 import { db } from "@/firebase"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 export default function OffersPage() {
   const [offers, setOffers] = useState<any[]>([])
   const [units, setUnits] = useState<any[]>([]) // ✅ يشمل الغرف والفلل
   const [loading, setLoading] = useState(true)
   const [editingOffer, setEditingOffer] = useState<any | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
 
   // ✅ تحميل البيانات + فحص انتهاء العروض
   useEffect(() => {
@@ -193,7 +196,7 @@ export default function OffersPage() {
             <p className="text-[#7C7469] text-lg">لا توجد عروض حالياً</p>
           </div>
         ) : (
-          offers.map((offer) => {
+          paginateData(offers, currentPage, itemsPerPage).map((offer) => {
             const relatedUnit = units.find((u) => u.id === offer.unitId)
             return (
               <div
@@ -250,6 +253,13 @@ export default function OffersPage() {
           })
         )}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalItems={offers.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* ✅ نافذة التعديل */}
       {editingOffer && (

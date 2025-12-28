@@ -12,10 +12,12 @@ import {
   query,
   orderBy,
 } from "firebase/firestore"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 type Unit = {
   id: string
   name: string
+  unitNumber?: string
   type: "room" | "villa"
   status: "متاح" | "محجوز" | "مؤكد" | "مقفلة" | "مسجل دخول" | "مغادر"
   housekeepingStatus: "نظيفة" | "متسخة" | "قيد التنظيف" | "تحت الفحص" | "تحت الصيانة"
@@ -28,6 +30,7 @@ type HousekeepingTask = {
   id: string
   unitId: string
   unitName: string
+  unitNumber?: string
   unitType: "room" | "villa"
   taskType: "تنظيف" | "تنظيف عميق" | "صيانة" | "فحص"
   status: "معلق" | "قيد التنفيذ" | "مكتمل"
@@ -46,6 +49,9 @@ export default function HousekeepingPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [showTaskModal, setShowTaskModal] = useState(false)
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [tasksPage, setTasksPage] = useState(1)
+  const itemsPerPage = 6
   const [taskForm, setTaskForm] = useState({
     taskType: "تنظيف" as "تنظيف" | "تنظيف عميق" | "صيانة" | "فحص",
     priority: "عادي" as "عادي" | "عاجل" | "VIP",
@@ -74,6 +80,7 @@ export default function HousekeepingPage() {
         id: d.id,
         ...d.data(),
         type: "room" as const,
+        unitNumber: d.data().unitNumber || "",
         housekeepingStatus: d.data().housekeepingStatus || "نظيفة",
       })) as Unit[]
 
@@ -83,6 +90,7 @@ export default function HousekeepingPage() {
         id: d.id,
         ...d.data(),
         type: "villa" as const,
+        unitNumber: d.data().unitNumber || "",
         housekeepingStatus: d.data().housekeepingStatus || "نظيفة",
       })) as Unit[]
 
@@ -95,6 +103,7 @@ export default function HousekeepingPage() {
       const tasksData = tasksSnap.docs.map((d) => ({
         id: d.id,
         ...d.data(),
+        unitNumber: d.data().unitNumber || "",
         createdAt: d.data().createdAt?.toDate?.()?.toLocaleDateString("ar-SA") || "—",
         completedAt: d.data().completedAt?.toDate?.()?.toLocaleDateString("ar-SA"),
       })) as HousekeepingTask[]
@@ -130,6 +139,7 @@ export default function HousekeepingPage() {
       await addDoc(collection(db, "housekeepingTasks"), {
         unitId: selectedUnit.id,
         unitName: selectedUnit.name,
+        unitNumber: selectedUnit.unitNumber || "",
         unitType: selectedUnit.type,
         taskType: taskForm.taskType,
         status: "معلق",
@@ -186,6 +196,7 @@ export default function HousekeepingPage() {
     await addDoc(collection(db, "housekeepingTasks"), {
       unitId: unit.id,
       unitName: unit.name,
+      unitNumber: unit.unitNumber || "",
       unitType: unit.type,
       taskType: "تنظيف",
       status: "معلق",
@@ -394,7 +405,7 @@ export default function HousekeepingPage() {
 
           {/* شبكة الوحدات */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {filteredUnits.map((unit) => (
+            {paginateData(filteredUnits, currentPage, itemsPerPage).map((unit) => (
               <div
                 key={unit.id}
                 className={`relative rounded-2xl border-2 p-4 transition hover:shadow-lg cursor-pointer ${getStatusBg(
@@ -411,8 +422,11 @@ export default function HousekeepingPage() {
                 {/* الحالة */}
                 <div className={`w-4 h-4 rounded-full absolute top-2 right-2 ${getStatusColor(unit.housekeepingStatus)}`}></div>
 
-                {/* الاسم */}
+                {/* الاسم ورقم الوحدة */}
                 <div className="mt-4 text-center">
+                  {unit.unitNumber && (
+                    <p className="text-lg font-bold text-[#C6A76D] mb-1">{unit.unitNumber}</p>
+                  )}
                   <p className="font-bold text-sm truncate">{unit.name}</p>
                   <p className="text-xs mt-1 opacity-75">{unit.housekeepingStatus}</p>
                 </div>
@@ -482,6 +496,13 @@ export default function HousekeepingPage() {
               </div>
             ))}
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredUnits.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
 
@@ -493,8 +514,9 @@ export default function HousekeepingPage() {
               <p className="text-[#7C7469] text-lg">لا توجد مهام معلقة</p>
             </div>
           ) : (
+            <>
             <div className="divide-y divide-[#E8E1D6]">
-              {pendingTasks.map((task) => (
+              {paginateData(pendingTasks, tasksPage, itemsPerPage).map((task) => (
                 <div
                   key={task.id}
                   className="p-4 flex items-center justify-between hover:bg-[#FAF8F3] transition"
@@ -516,7 +538,12 @@ export default function HousekeepingPage() {
                         : "🔍"}
                     </div>
                     <div>
-                      <p className="font-bold text-[#2B2A28]">{task.unitName}</p>
+                      <div className="flex items-center gap-2">
+                        {task.unitNumber && (
+                          <span className="px-2 py-0.5 bg-[#C6A76D] text-white rounded-lg text-sm font-bold">{task.unitNumber}</span>
+                        )}
+                        <p className="font-bold text-[#2B2A28]">{task.unitName}</p>
+                      </div>
                       <p className="text-sm text-[#7C7469]">{task.taskType}</p>
                       {task.assignedTo && (
                         <p className="text-xs text-[#7C7469]">👤 {task.assignedTo}</p>
@@ -560,6 +587,13 @@ export default function HousekeepingPage() {
                 </div>
               ))}
             </div>
+            <Pagination
+              currentPage={tasksPage}
+              totalItems={pendingTasks.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setTasksPage}
+            />
+            </>
           )}
         </div>
       )}
@@ -583,7 +617,12 @@ export default function HousekeepingPage() {
                       className="flex items-center justify-between p-3 bg-orange-50 rounded-xl border border-orange-200"
                     >
                       <div>
-                        <p className="font-bold">{unit.name}</p>
+                        <div className="flex items-center gap-2">
+                          {unit.unitNumber && (
+                            <span className="px-2 py-0.5 bg-orange-500 text-white rounded-lg text-sm font-bold">{unit.unitNumber}</span>
+                          )}
+                          <p className="font-bold">{unit.name}</p>
+                        </div>
                         <p className="text-sm text-orange-600">
                           {unit.type === "room" ? "غرفة" : "فيلا"}
                         </p>
@@ -633,7 +672,12 @@ export default function HousekeepingPage() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
             <div className="bg-gradient-to-l from-[#2B2A28] to-[#3D3A36] text-white p-6 rounded-t-2xl">
               <h2 className="text-xl font-bold">إنشاء مهمة جديدة</h2>
-              <p className="text-[#C6A76D] mt-1">{selectedUnit.name}</p>
+              <div className="flex items-center gap-2 mt-1">
+                {selectedUnit.unitNumber && (
+                  <span className="px-2 py-0.5 bg-[#C6A76D] text-white rounded-lg text-sm font-bold">{selectedUnit.unitNumber}</span>
+                )}
+                <p className="text-[#C6A76D]">{selectedUnit.name}</p>
+              </div>
             </div>
 
             <div className="p-6 space-y-4">

@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { db } from "@/firebase"
 import { collection, getDocs } from "firebase/firestore"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 type Villa = {
   id: string
@@ -27,6 +28,8 @@ function pickCover(v: Villa): string {
 export default function VillasPage() {
   const [villas, setVillas] = useState<Villa[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
 
   useEffect(() => {
     const fetchVillas = async () => {
@@ -91,8 +94,9 @@ export default function VillasPage() {
           <p className="text-[#7C7469] text-lg">لا توجد فلل حالياً</p>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {withCovers.map((villa) => (
+        <>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {paginateData(withCovers, currentPage, itemsPerPage).map((villa) => (
             <div
               key={villa.id}
               className="bg-white rounded-2xl shadow-lg border border-[#E8E1D6] overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group"
@@ -133,6 +137,13 @@ export default function VillasPage() {
             </div>
           ))}
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={withCovers.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
+      </>
       )}
     </div>
   )

@@ -11,6 +11,7 @@ import {
   addDoc,
   serverTimestamp,
 } from "firebase/firestore"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 type Booking = {
   id: string
@@ -49,6 +50,8 @@ export default function BookingsPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [showManualForm, setShowManualForm] = useState(false)
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
   const [manualForm, setManualForm] = useState({
     fullName: "",
     phone: "",
@@ -557,14 +560,15 @@ export default function BookingsPage() {
           <p className="text-[#7C7469] text-lg">لا توجد حجوزات حالياً</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-[#E8E1D6] shadow-sm">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gradient-to-l from-[#C6A76D]/10 to-[#A48E78]/10">
-              <tr className="text-[#2B2A28]">
-                <th className="py-4 px-4 border-b border-[#E8E1D6] font-semibold">الاسم</th>
-                <th className="py-4 px-4 border-b border-[#E8E1D6] font-semibold">رقم الجوال</th>
-                <th className="py-4 px-4 border-b border-[#E8E1D6] font-semibold">رقم الهوية</th>
-                <th className="py-4 px-4 border-b border-[#E8E1D6] font-semibold">نوع الحجز</th>
+        <>
+          <div className="overflow-x-auto rounded-2xl border border-[#E8E1D6] shadow-sm">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gradient-to-l from-[#C6A76D]/10 to-[#A48E78]/10">
+                <tr className="text-[#2B2A28]">
+                  <th className="py-4 px-4 border-b border-[#E8E1D6] font-semibold">الاسم</th>
+                  <th className="py-4 px-4 border-b border-[#E8E1D6] font-semibold">رقم الجوال</th>
+                  <th className="py-4 px-4 border-b border-[#E8E1D6] font-semibold">رقم الهوية</th>
+                  <th className="py-4 px-4 border-b border-[#E8E1D6] font-semibold">نوع الحجز</th>
                 <th className="py-4 px-4 border-b border-[#E8E1D6] font-semibold">الوحدة</th>
                 <th className="py-4 px-4 border-b border-[#E8E1D6] font-semibold">من</th>
                 <th className="py-4 px-4 border-b border-[#E8E1D6] font-semibold">إلى</th>
@@ -579,7 +583,7 @@ export default function BookingsPage() {
               </tr>
             </thead>
             <tbody className="bg-white">
-              {bookings.map((b) => (
+              {paginateData(bookings, currentPage, itemsPerPage).map((b) => (
                 <tr key={b.id} className="text-[#2B2A28] hover:bg-[#FAF8F3] transition-colors">
                   <td className="py-4 px-4 border-b border-[#E8E1D6] font-medium">{b.fullName}</td>
                   <td className="py-4 px-4 border-b border-[#E8E1D6]">{b.phone}</td>
@@ -655,6 +659,13 @@ export default function BookingsPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalItems={bookings.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
+      </>
       )}
     </div>
   )

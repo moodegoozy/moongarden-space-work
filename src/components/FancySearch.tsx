@@ -186,7 +186,7 @@ export default function FancySearch({ compact = false }: { compact?: boolean }) 
               <div className="flex gap-2 w-full items-center">
                 <div className="w-36 sm:w-40">
                   <Flatpickr
-                    value={checkIn || undefined}
+                    value={checkIn || null}
                     options={{
                       dateFormat: "Y-m-d",
                       minDate: new Date().toISOString().slice(0, 10),
@@ -201,7 +201,7 @@ export default function FancySearch({ compact = false }: { compact?: boolean }) 
                 </div>
                 <div className="w-36 sm:w-40">
                   <Flatpickr
-                    value={checkOut || undefined}
+                    value={checkOut || null}
                     options={{
                       dateFormat: "Y-m-d",
                       minDate: checkIn || new Date().toISOString().slice(0, 10),

@@ -12,6 +12,7 @@ import {
   orderBy,
   serverTimestamp,
 } from "firebase/firestore"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 type Invoice = {
   id: string
@@ -72,6 +73,8 @@ export default function InvoicesPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [filterStatus, setFilterStatus] = useState<string>("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
   const [newItem, setNewItem] = useState<InvoiceItem>({
     description: "",
     quantity: 1,
@@ -481,7 +484,7 @@ export default function InvoicesPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredInvoices.map((invoice, idx) => (
+                {paginateData(filteredInvoices, currentPage, itemsPerPage).map((invoice, idx) => (
                   <tr
                     key={invoice.id}
                     className={`border-b border-[#E8E1D6]/50 hover:bg-[#FAF8F3]/50 transition ${
@@ -551,6 +554,12 @@ export default function InvoicesPage() {
             </table>
           </div>
         )}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredInvoices.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* Modal إنشاء فاتورة */}

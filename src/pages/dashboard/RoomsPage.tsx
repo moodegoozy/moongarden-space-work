@@ -3,10 +3,13 @@ import RoomCard from "../../components/RoomCard"
 import { db } from "@/firebase"
 import { collection, getDocs } from "firebase/firestore"
 import { Link } from "react-router-dom"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 6
 
   // ✅ تحميل بيانات الغرف من Firestore
   useEffect(() => {
@@ -60,11 +63,19 @@ export default function RoomsPage() {
           <p className="text-[#7C7469] text-lg">لا توجد غرف حالياً</p>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {rooms.map((room) => (
-            <RoomCard key={room.id} {...room} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {paginateData(rooms, currentPage, itemsPerPage).map((room) => (
+              <RoomCard key={room.id} {...room} />
+            ))}
+          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalItems={rooms.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
+        </>
       )}
     </div>
   )

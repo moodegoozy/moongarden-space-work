@@ -11,6 +11,7 @@ import {
   doc,
   Timestamp,
 } from "firebase/firestore"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 type Booking = {
   id: string
@@ -49,6 +50,10 @@ export default function FrontDesk() {
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<"arrivals" | "departures" | "inhouse">("arrivals")
+  const [arrivalsPage, setArrivalsPage] = useState(1)
+  const [departuresPage, setDeparturesPage] = useState(1)
+  const [inhousePage, setInhousePage] = useState(1)
+  const itemsPerPage = 5
 
   const today = new Date().toISOString().split("T")[0]
 
@@ -303,7 +308,7 @@ export default function FrontDesk() {
                     </tr>
                   </thead>
                   <tbody>
-                    {todayArrivals.map((booking, idx) => (
+                    {paginateData(todayArrivals, arrivalsPage, itemsPerPage).map((booking, idx) => (
                       <tr
                         key={booking.id}
                         className={`border-b border-[#E8E1D6]/50 hover:bg-[#FAF8F3]/50 transition ${
@@ -342,6 +347,14 @@ export default function FrontDesk() {
                 </table>
               </div>
             )}
+            {todayArrivals.length > 0 && (
+              <Pagination
+                currentPage={arrivalsPage}
+                totalItems={todayArrivals.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setArrivalsPage}
+              />
+            )}
           </>
         )}
 
@@ -367,7 +380,7 @@ export default function FrontDesk() {
                     </tr>
                   </thead>
                   <tbody>
-                    {todayDepartures.map((booking, idx) => {
+                    {paginateData(todayDepartures, departuresPage, itemsPerPage).map((booking, idx) => {
                       const nights = Math.ceil(
                         (new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 60 * 60 * 24)
                       )
@@ -411,6 +424,14 @@ export default function FrontDesk() {
                 </table>
               </div>
             )}
+            {todayDepartures.length > 0 && (
+              <Pagination
+                currentPage={departuresPage}
+                totalItems={todayDepartures.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setDeparturesPage}
+              />
+            )}
           </>
         )}
 
@@ -437,7 +458,7 @@ export default function FrontDesk() {
                     </tr>
                   </thead>
                   <tbody>
-                    {currentGuests.map((booking, idx) => (
+                    {paginateData(currentGuests, inhousePage, itemsPerPage).map((booking, idx) => (
                       <tr
                         key={booking.id}
                         className={`border-b border-[#E8E1D6]/50 hover:bg-[#FAF8F3]/50 transition ${
@@ -483,6 +504,14 @@ export default function FrontDesk() {
                   </tbody>
                 </table>
               </div>
+            )}
+            {currentGuests.length > 0 && (
+              <Pagination
+                currentPage={inhousePage}
+                totalItems={currentGuests.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setInhousePage}
+              />
             )}
           </>
         )}

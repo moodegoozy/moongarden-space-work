@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { db, storage } from "@/firebase"
 import { collection, getDocs, updateDoc, doc, deleteDoc, addDoc } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 type Room = {
   id: string
@@ -19,6 +20,8 @@ export default function AdminRoomsManage() {
   const [editingRoom, setEditingRoom] = useState<Room | null>(null)
   const [newImage, setNewImage] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
 
   useEffect(() => {
     const loadRooms = async () => {
@@ -137,7 +140,7 @@ export default function AdminRoomsManage() {
 
       {/* بطاقات الغرف */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {rooms.map((room) => (
+        {paginateData(rooms, currentPage, itemsPerPage).map((room) => (
           <div
             key={room.id}
             className="bg-white rounded-2xl border border-[#E8E1D6] shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group"
@@ -198,6 +201,13 @@ export default function AdminRoomsManage() {
           </div>
         ))}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalItems={rooms.length}
+        itemsPerPage={itemsPerPage}
+        onPageChange={setCurrentPage}
+      />
 
       {/* نافذة التعديل */}
       {editingRoom && (

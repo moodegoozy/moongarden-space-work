@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { db } from "@/firebase"
 import { collection, getDocs, query, orderBy } from "firebase/firestore"
+import Pagination, { paginateData } from "@/components/Pagination"
 
 type Guest = {
   id: string
@@ -24,6 +25,8 @@ export default function GuestsPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [filterStatus, setFilterStatus] = useState<"all" | "vip" | "regular" | "new">("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
 
   useEffect(() => {
     fetchGuests()
@@ -225,7 +228,7 @@ export default function GuestsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredGuests.map((guest, idx) => (
+                {paginateData(filteredGuests, currentPage, itemsPerPage).map((guest, idx) => (
                   <tr
                     key={guest.id}
                     className={`border-b border-[#E8E1D6]/50 hover:bg-[#FAF8F3]/50 transition ${
@@ -276,8 +279,12 @@ export default function GuestsPage() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        )}        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredGuests.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+        />      </div>
     </div>
   )
 }
