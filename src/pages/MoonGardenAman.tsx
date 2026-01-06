@@ -9,7 +9,7 @@ import MapSection from "@/components/MapSection"
 
 // مصادر الصور
 const heroImg = "/banner-fixed.png"
-const wellnessImg = "/offers/1.jpg"
+const wellnessImg = "/offers/offer1.png"
 
 export default function MoonGardenAman() {
   const [rooms, setRooms] = useState<any[]>([])
@@ -113,13 +113,15 @@ export default function MoonGardenAman() {
             </details>
           </div>
 
-          {/* ✅ زر دخول الإدارة */}
-          <Link
-            to="/admin-login"
+          {/* ✅ زر تواصل مباشر عبر واتساب */}
+          <a
+            href="https://wa.me/966573878878"
+            target="_blank"
+            rel="noopener noreferrer"
             className="hidden md:inline-block px-4 lg:px-6 py-2 lg:py-2.5 rounded-full bg-[#2B2A28] text-[#FAF8F3] text-xs lg:text-sm hover:opacity-90 transition"
           >
-            دخول الإدارة
-          </Link>
+            تواصل مباشر
+          </a>
         </div>
       </header>
 
@@ -249,6 +251,11 @@ export default function MoonGardenAman() {
               <li>
                 <Link to="/amenities" className="hover:text-[var(--accent)] hover:underline">
                   المرافق
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-[var(--accent)] hover:underline">
+                  تواصل معنا
                 </Link>
               </li>
             </ul>

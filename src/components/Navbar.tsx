@@ -59,13 +59,15 @@ export default function Navbar() {
             </details>
           </div>
 
-          {/* زر دخول الإدارة لسطح المكتب */}
-          <Link
-            to="/admin"
-            className="hidden md:inline rounded-full px-4 py-2 text-sm font-medium bg-[#2B2A28] text-[var(--accent)] transition hover:opacity-90 border-2 border-transparent hover:border-[var(--accent)]"
+          {/* زر تواصل مباشر عبر واتساب */}
+          <a
+            href="https://wa.me/966573878878"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:inline rounded-full px-4 py-2 text-sm font-medium bg-[#2B2A28] text-[#FAF8F3] transition hover:opacity-90"
           >
-            دخول الإدارة
-          </Link>
+            تواصل مباشر
+          </a>
         </div>
       </div>
 

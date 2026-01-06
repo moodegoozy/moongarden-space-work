@@ -16,6 +16,7 @@ import SearchResults from "./pages/SearchResults"
 import Review from "./pages/Review"
 import BookingPage from "./pages/BookingPage"
 import Amenities from "./pages/Amenities" // ✅ صفحة المرافق الجديدة
+import ContactUs from "./pages/ContactUs" // ✅ صفحة تواصل معنا
 
 // ✅ الصفحة الرئيسية (ثيم موون قاردن)
 import MoonGardenAman from "./pages/MoonGardenAman"
@@ -53,6 +54,7 @@ import ReportsPage from "./pages/dashboard/ReportsPage"
 import SettingsPage from "./pages/dashboard/SettingsPage"
 import RateManagementPage from "./pages/dashboard/RateManagementPage"
 import ActivityLogPage from "./pages/dashboard/ActivityLogPage"
+import AmenitiesPage from "./pages/dashboard/AmenitiesPage"
 
 export default function App() {
   const [indexes, setIndexes] = useState([1, 2, 3, 4])
@@ -138,6 +140,9 @@ export default function App() {
         {/* ✨ صفحة المرافق والخدمات */}
         <Route path="/amenities" element={<Amenities />} />
 
+        {/* ✨ صفحة تواصل معنا */}
+        <Route path="/contact" element={<ContactUs />} />
+
         {/* الواجهة القديمة (اختيارية) */}
         <Route path="/classic" element={ClassicHome} />
 
@@ -180,6 +185,7 @@ export default function App() {
           <Route path="settings" element={<SettingsPage />} />
           <Route path="rate-management" element={<RateManagementPage />} />
           <Route path="activity-log" element={<ActivityLogPage />} />
+          <Route path="amenities" element={<AmenitiesPage />} />
         </Route>
       </Routes>
     </Router>

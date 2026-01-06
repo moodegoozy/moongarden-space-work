@@ -1,8 +1,18 @@
 // src/pages/Amenities.tsx
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { motion } from "framer-motion"
+import { db } from "@/firebase"
+import { collection, getDocs } from "firebase/firestore"
 
-const amenitiesData = [
+type Amenity = {
+  id: string
+  title: string
+  image: string
+  order?: number
+}
+
+// بيانات افتراضية في حال لم توجد بيانات في Firestore
+const defaultAmenities = [
   { title: "المسبح الخارجي", image: "/1.png" },
   { title: "المطعم الفاخر", image: "/2.png" },
   { title: "مركز اللياقة", image: "/3.png" },
@@ -14,6 +24,32 @@ const amenitiesData = [
 ]
 
 export default function Amenities() {
+  const [amenities, setAmenities] = useState<Amenity[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchAmenities = async () => {
+      try {
+        const snap = await getDocs(collection(db, "amenities"))
+        if (snap.empty) {
+          // استخدم البيانات الافتراضية
+          setAmenities(defaultAmenities.map((a, i) => ({ ...a, id: String(i) })))
+        } else {
+          const data = snap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          })) as Amenity[]
+          setAmenities(data.sort((a, b) => (a.order || 0) - (b.order || 0)))
+        }
+      } catch (err) {
+        console.error("خطأ في جلب المرافق:", err)
+        setAmenities(defaultAmenities.map((a, i) => ({ ...a, id: String(i) })))
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAmenities()
+  }, [])
   return (
     <div dir="rtl" className="bg-[#F6F1E9] text-[#2B2A28] min-h-screen">
       {/* ✅ الهيدر */}
@@ -26,11 +62,18 @@ export default function Amenities() {
 
       {/* ✅ شبكة الصور */}
       <section className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {amenitiesData.map((item, index) => (
-            <AmenityCard key={index} title={item.title} image={item.image} delay={index * 0.1} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-16 h-16 border-4 border-[#C6A76D] border-t-transparent rounded-full animate-spin mb-4"></div>
+            <p className="text-[#7C7469]">جاري تحميل المرافق...</p>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {amenities.map((item, index) => (
+              <AmenityCard key={item.id} title={item.title} image={item.image} delay={index * 0.1} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ✅ زر العودة */}
