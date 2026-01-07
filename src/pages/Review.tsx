@@ -1,6 +1,5 @@
 import { FormEvent, useEffect, useState } from "react"
-import Navbar from "../components/Navbar"
-import Footer from "../components/Footer"
+import { Link } from "react-router-dom"
 import {
   addDoc,
   collection,
@@ -10,6 +9,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore"
 import { db } from "../firebase"
+import Footer from "../components/Footer"
 
 interface ReviewEntry {
   id: string
@@ -76,114 +76,118 @@ export default function Review() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col">
-      <Navbar />
-      <main className="flex-1">
-        <section className="bg-gray-50 border-b border-black/5">
-          <div className="max-w-4xl mx-auto px-6 py-16 text-center">
-            <div className="mx-auto mb-6 inline-flex items-center justify-center rounded-full border border-black/10 px-6 py-3 text-sm font-medium uppercase tracking-widest text-gray-700">
-              Moon Garden
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
-              شاركنا رأيك حول مون قاردن
-            </h1>
-            <p className="text-gray-600 leading-relaxed">
-              نسعد دائماً بسماع آرائكم واقتراحاتكم لتحسين تجربتكم معنا.
-              اكتب رأيك بالأسفل وسيظهر مع آراء العملاء الآخرين.
-            </p>
-          </div>
-        </section>
+    <div dir="rtl" className="min-h-screen bg-[#F6F1E9] text-[#2B2A28] flex flex-col">
+      {/* الهيدر */}
+      <section className="relative bg-[#2B2A28] text-[#FAF8F3] py-12 sm:py-20 text-center px-4">
+        <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">آراء العملاء</h1>
+        <p className="text-[#E1DCCE] text-sm sm:text-lg max-w-2xl mx-auto">
+          نسعد دائماً بسماع آرائكم واقتراحاتكم لتحسين تجربتكم معنا
+        </p>
+      </section>
 
-        <section className="max-w-4xl mx-auto px-6 py-12 grid gap-12 md:grid-cols-5">
-          <div className="md:col-span-3 bg-white border border-black/10 rounded-2xl shadow-sm p-8">
-            <h2 className="text-2xl font-semibold mb-6 text-gray-900">اكتب رأيك</h2>
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="text-right">
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    الاسم الكامل
-                  </label>
-                  <input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    className="w-full rounded-lg border border-black/10 px-4 py-3 text-right focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-                    placeholder="أدخل اسمك"
-                    dir="rtl"
-                  />
-                </div>
-                <div className="text-right">
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                    رقم الجوال
-                  </label>
-                  <input
-                    id="phone"
-                    type="tel"
-                    value={phone}
-                    onChange={(event) => setPhone(event.target.value)}
-                    className="w-full rounded-lg border border-black/10 px-4 py-3 text-right focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-                    placeholder="05xxxxxxxx"
-                    dir="rtl"
-                  />
-                </div>
-              </div>
-
+      {/* المحتوى الرئيسي */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 grid gap-6 sm:gap-10 md:grid-cols-5">
+        {/* نموذج إرسال الرأي */}
+        <div className="md:col-span-3 bg-white border border-[#E8E1D6] rounded-2xl shadow-sm p-5 sm:p-8">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-[#2B2A28]">✨ شاركنا رأيك</h2>
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="grid md:grid-cols-2 gap-6">
               <div className="text-right">
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                  رأيك وتجربتك
+                <label htmlFor="name" className="block text-sm font-medium text-[#2B2A28] mb-2">
+                  الاسم الكامل
                 </label>
-                <textarea
-                  id="message"
-                  value={message}
-                  onChange={(event) => setMessage(event.target.value)}
-                  className="w-full min-h-[160px] rounded-lg border border-black/10 px-4 py-3 text-right focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-                  placeholder="شاركنا رأيك وتجربتك"
+                <input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  className="w-full rounded-xl border border-[#E8E1D6] px-4 py-3 text-right focus:border-[#C6A76D] focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/20 transition"
+                  placeholder="أدخل اسمك"
                   dir="rtl"
                 />
               </div>
-
-              {error && <p className="text-red-500 text-sm text-right">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full rounded-lg bg-black px-6 py-3 text-white font-semibold hover:bg-gray-900 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? "جاري الإرسال..." : "إرسال رأيي"}
-              </button>
-            </form>
-          </div>
-
-          <div className="md:col-span-2 space-y-4">
-            <h2 className="text-2xl font-semibold text-gray-900">آراء العملاء السابقة</h2>
-            <p className="text-gray-600 text-sm">
-              يتم تحديث القائمة تلقائياً بمجرد إضافة رأي جديد.
-            </p>
-
-            <div className="space-y-4 max-h-[540px] overflow-y-auto pr-2">
-              {reviews.length === 0 && (
-                <div className="rounded-xl border border-black/10 bg-gray-50 p-6 text-center text-gray-500">
-                  لا توجد آراء بعد. كن أول من يشاركنا رأيه.
-                </div>
-              )}
-
-              {reviews.map((review) => (
-                <article
-                  key={review.id}
-                  className="rounded-xl border border-black/10 bg-white p-5 shadow-sm text-right"
-                >
-                  <div className="flex flex-col gap-1">
-                    <h3 className="text-lg font-semibold text-gray-900">{review.name}</h3>
-                    <span className="text-sm text-gray-500">{review.phone}</span>
-                  </div>
-                  <p className="mt-3 text-gray-700 leading-relaxed">{review.message}</p>
-                </article>
-              ))}
+              <div className="text-right">
+                <label htmlFor="phone" className="block text-sm font-medium text-[#2B2A28] mb-2">
+                  رقم الجوال
+                </label>
+                <input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  className="w-full rounded-xl border border-[#E8E1D6] px-4 py-3 text-right focus:border-[#C6A76D] focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/20 transition"
+                  placeholder="05xxxxxxxx"
+                  dir="rtl"
+                />
+              </div>
             </div>
+
+            <div className="text-right">
+              <label htmlFor="message" className="block text-sm font-medium text-[#2B2A28] mb-2">
+                رأيك وتجربتك
+              </label>
+              <textarea
+                id="message"
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                className="w-full min-h-[160px] rounded-xl border border-[#E8E1D6] px-4 py-3 text-right focus:border-[#C6A76D] focus:outline-none focus:ring-2 focus:ring-[#C6A76D]/20 transition"
+                placeholder="شاركنا رأيك وتجربتك"
+                dir="rtl"
+              />
+            </div>
+
+            {error && <p className="text-red-500 text-sm text-right">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-xl bg-[#2B2A28] px-6 py-3 text-white font-semibold hover:bg-[#3d3c3a] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "جاري الإرسال..." : "إرسال رأيي"}
+            </button>
+          </form>
+        </div>
+
+        {/* آراء العملاء */}
+        <div className="md:col-span-2 space-y-4">
+          <h2 className="text-2xl font-bold text-[#2B2A28]">💬 آراء العملاء</h2>
+          <p className="text-[#7C7469] text-sm">
+            يتم تحديث القائمة تلقائياً بمجرد إضافة رأي جديد.
+          </p>
+
+          <div className="space-y-4 max-h-[540px] overflow-y-auto pr-2">
+            {reviews.length === 0 && (
+              <div className="rounded-2xl border border-[#E8E1D6] bg-[#FAF8F3] p-6 text-center text-[#7C7469]">
+                لا توجد آراء بعد. كن أول من يشاركنا رأيه.
+              </div>
+            )}
+
+            {reviews.map((review) => (
+              <article
+                key={review.id}
+                className="rounded-2xl border border-[#E8E1D6] bg-white p-5 shadow-sm text-right"
+              >
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-lg font-bold text-[#2B2A28]">{review.name}</h3>
+                  <span className="text-sm text-[#7C7469]">{review.phone}</span>
+                </div>
+                <p className="mt-3 text-[#5E5B53] leading-relaxed">{review.message}</p>
+              </article>
+            ))}
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+
+      {/* زر العودة */}
+      <div className="text-center pb-12">
+        <Link
+          to="/"
+          className="inline-block px-8 py-3 bg-[#2B2A28] text-[#FAF8F3] rounded-full text-sm hover:opacity-90 transition"
+        >
+          العودة إلى الصفحة الرئيسية
+        </Link>
+      </div>
+
       <Footer />
     </div>
   )

@@ -3,22 +3,46 @@ import HotelSearchBar from "@/components/HotelSearchBar"
 import React, { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { db } from "@/firebase"
-import { collection, getDocs } from "firebase/firestore"
+import { collection, getDocs, query, orderBy, limit, doc, getDoc } from "firebase/firestore"
+import { Swiper, SwiperSlide } from "swiper/react"
+import { Autoplay, Pagination } from "swiper/modules"
+import "swiper/css"
+import "swiper/css/pagination"
 
 import MapSection from "@/components/MapSection"
 
 // مصادر الصور
 const heroImg = "/banner-fixed.png"
-const wellnessImg = "/offers/offer1.png"
+
+type SliderItem = {
+  id: string
+  image: string
+  title?: string
+  subtitle?: string
+  order: number
+}
+
+type VisionMission = {
+  vision: string
+  visionTitle: string
+  visionImage: string
+  mission: string
+  missionTitle: string
+  missionImage: string
+}
 
 export default function MoonGardenAman() {
   const [rooms, setRooms] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [amenityImage, setAmenityImage] = useState("/1.png") // صورة افتراضية
+  const [slides, setSlides] = useState<SliderItem[]>([])
+  const [visionMission, setVisionMission] = useState<VisionMission | null>(null)
 
-  // ✅ نسحب بيانات الغرف من Firestore (نفس rooms.tsx)
+  // ✅ نسحب بيانات الغرف وصورة المرافق والسلايدر والرؤية والرسالة من Firestore
   useEffect(() => {
-    const fetchRooms = async () => {
+    const fetchData = async () => {
       try {
+        // جلب الغرف
         const snap = await getDocs(collection(db, "rooms"))
         const data = snap.docs.map((doc) => {
           const room = doc.data()
@@ -37,13 +61,40 @@ export default function MoonGardenAman() {
           }
         })
         setRooms(data)
+
+        // جلب أول صورة من المرافق
+        const amenitiesSnap = await getDocs(
+          query(collection(db, "amenities"), orderBy("order", "asc"), limit(1))
+        )
+        if (!amenitiesSnap.empty) {
+          const firstAmenity = amenitiesSnap.docs[0].data()
+          if (firstAmenity.image) {
+            setAmenityImage(firstAmenity.image)
+          }
+        }
+
+        // جلب شرائح السلايدر
+        const sliderSnap = await getDocs(
+          query(collection(db, "slider"), orderBy("order", "asc"))
+        )
+        const sliderData = sliderSnap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as SliderItem[]
+        setSlides(sliderData)
+
+        // جلب الرؤية والرسالة
+        const vmDoc = await getDoc(doc(db, "settings", "vision_mission"))
+        if (vmDoc.exists()) {
+          setVisionMission(vmDoc.data() as VisionMission)
+        }
       } catch (err) {
-        console.error("❌ خطأ أثناء تحميل الغرف:", err)
+        console.error("❌ خطأ أثناء تحميل البيانات:", err)
       } finally {
         setLoading(false)
       }
     }
-    fetchRooms()
+    fetchData()
   }, [])
 
   return (
@@ -148,16 +199,135 @@ export default function MoonGardenAman() {
         </div>
       </section>
 
+      {/* ✅ بانر الرؤية والرسالة - متحرك */}
+      {visionMission && (visionMission.vision || visionMission.mission) && (
+        <section className="relative w-full py-8 sm:py-12">
+          <div className="max-w-7xl mx-auto px-4">
+            <Swiper
+              modules={[Autoplay, Pagination]}
+              autoplay={{ delay: 10000, disableOnInteraction: false }}
+              loop={visionMission.vision && visionMission.mission}
+              pagination={{ clickable: true }}
+              className="w-full rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl"
+            >
+              {/* الرؤية */}
+              {visionMission.vision && (
+                <SwiperSlide>
+                  <div 
+                    className="relative min-h-[200px] sm:min-h-[280px] md:min-h-[320px] w-full"
+                    style={{
+                      backgroundImage: visionMission.visionImage ? `url(${visionMission.visionImage})` : 'none',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundColor: visionMission.visionImage ? 'transparent' : '#2B2A28',
+                    }}
+                  >
+                    {/* طبقة التظليل */}
+                    <div className={`absolute inset-0 ${visionMission.visionImage ? 'bg-black/60' : 'bg-gradient-to-br from-[#2B2A28] to-[#3D3A36]'}`} />
+                    
+                    <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-6 sm:p-10 md:p-14">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#C6A76D]/30 backdrop-blur rounded-full flex items-center justify-center mb-4 sm:mb-5">
+                        <span className="text-3xl sm:text-4xl">👁️</span>
+                      </div>
+                      <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#E2C891] mb-3 sm:mb-4 drop-shadow-lg">
+                        {visionMission.visionTitle || "رؤيتنا"}
+                      </h3>
+                      <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl drop-shadow-md">
+                        {visionMission.vision}
+                      </p>
+                    </div>
+                  </div>
+                </SwiperSlide>
+              )}
+
+              {/* الرسالة */}
+              {visionMission.mission && (
+                <SwiperSlide>
+                  <div 
+                    className="relative min-h-[200px] sm:min-h-[280px] md:min-h-[320px] w-full"
+                    style={{
+                      backgroundImage: visionMission.missionImage ? `url(${visionMission.missionImage})` : 'none',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundColor: visionMission.missionImage ? 'transparent' : '#2B2A28',
+                    }}
+                  >
+                    {/* طبقة التظليل */}
+                    <div className={`absolute inset-0 ${visionMission.missionImage ? 'bg-black/60' : 'bg-gradient-to-br from-[#2B2A28] to-[#3D3A36]'}`} />
+                    
+                    <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-6 sm:p-10 md:p-14">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#C6A76D]/30 backdrop-blur rounded-full flex items-center justify-center mb-4 sm:mb-5">
+                        <span className="text-3xl sm:text-4xl">📝</span>
+                      </div>
+                      <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#E2C891] mb-3 sm:mb-4 drop-shadow-lg">
+                        {visionMission.missionTitle || "رسالتنا"}
+                      </h3>
+                      <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl drop-shadow-md">
+                        {visionMission.mission}
+                      </p>
+                    </div>
+                  </div>
+                </SwiperSlide>
+              )}
+            </Swiper>
+          </div>
+        </section>
+      )}
 
       {/* شريط بحث فندقي كلاسيكي */}
-      <section className="z-20 relative max-w-3xl mx-auto w-full px-4" style={{marginTop: '-36px', position: 'relative'}}>
-        <div className="pt-6 md:pt-10">
+      <section className="z-20 relative w-full px-4" style={{marginTop: '24px', position: 'relative'}}>
+        <div className="max-w-3xl mx-auto pt-6 md:pt-10">
           <HotelSearchBar />
         </div>
       </section>
 
+      {/* ✅ سلايدر الصور العريض */}
+      {slides.length > 0 && (
+        <section className="w-full py-8 sm:py-12">
+          <div className="max-w-7xl mx-auto px-4">
+            <Swiper
+              modules={[Autoplay, Pagination]}
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              loop={slides.length > 1}
+              pagination={{ clickable: true }}
+              className="w-full rounded-xl sm:rounded-2xl overflow-hidden shadow-lg"
+            >
+              {slides.map((slide) => (
+                <SwiperSlide key={slide.id}>
+                  <div className="relative h-48 sm:h-64 md:h-80 lg:h-96">
+                    <img
+                      src={slide.image}
+                      alt={slide.title || "صورة"}
+                      className="w-full h-full object-cover"
+                      onError={(e) => ((e.target as HTMLImageElement).src = "/placeholder.png")}
+                    />
+                    {/* النص على الصورة */}
+                    {(slide.title || slide.subtitle) && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end">
+                        <div className="p-4 sm:p-6 md:p-8 text-white">
+                          {slide.title && (
+                            <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 drop-shadow-lg">
+                              {slide.title}
+                            </h3>
+                          )}
+                          {slide.subtitle && (
+                            <p className="text-xs sm:text-sm md:text-base opacity-90 drop-shadow-md">
+                              {slide.subtitle}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+        </section>
+      )}
+
       {/* ✅ الغرف (مسحوبة من Firestore) */}
-      <section id="stay" className="max-w-7xl mx-auto px-4 pt-16 sm:pt-24">
+      <section id="stay" className="max-w-7xl mx-auto px-4 pt-8 sm:pt-16">
         <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">الأجنحة والغرف الفندقية</h3>
         <p className="text-[#7C7469] mb-6 text-sm sm:text-base">اختر من مجموعتنا المتنوعة بما يناسبك.</p>
 
@@ -166,11 +336,11 @@ export default function MoonGardenAman() {
         ) : rooms.length === 0 ? (
           <p className="text-center text-[#7C7469]">لا توجد غرف حالياً</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
             {rooms.slice(0, 6).map((room) => (
               <article
                 key={room.id}
-                className="rounded-2xl overflow-hidden bg-white border border-[#E8E1D6] shadow-sm hover:shadow-md transition"
+                className="rounded-xl sm:rounded-2xl overflow-hidden bg-white border border-[#E8E1D6] shadow-sm hover:shadow-md transition"
               >
                 <div className="aspect-[4/3] overflow-hidden">
                   <img
@@ -179,12 +349,12 @@ export default function MoonGardenAman() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="p-5">
-                  <h4 className="font-medium">{room.name}</h4>
-                  <p className="text-[#7C7469] text-sm mt-1">السعر: {room.price} ريال</p>
+                <div className="p-3 sm:p-5">
+                  <h4 className="font-medium text-sm sm:text-base line-clamp-2">{room.name}</h4>
+                  <p className="text-[#7C7469] text-xs sm:text-sm mt-1">السعر: {room.price} ريال</p>
                   <Link
                     to="/rooms"
-                    className="mt-4 inline-block px-4 py-2 rounded-full border border-[#E8E1D6] text-sm hover:bg-[#F3EFE7]"
+                    className="mt-3 sm:mt-4 inline-block px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-[#E8E1D6] text-xs sm:text-sm hover:bg-[#F3EFE7]"
                   >
                     استعراض جميع الغرف
                   </Link>
@@ -196,25 +366,30 @@ export default function MoonGardenAman() {
       </section>
 
       {/* ✅ قسم المرافق والخدمات (مختصر يؤدي للصفحة الكاملة) */}
-      <section id="amenities" className="max-w-7xl mx-auto px-4 py-12 sm:py-20">
-        <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-center">
-          <div className="rounded-2xl overflow-hidden border border-[#E8E1D6] order-2 md:order-1">
-            <img className="w-full h-48 sm:h-full object-cover" src={wellnessImg} alt="المرافق" />
+      <section id="amenities" className="max-w-7xl mx-auto px-4 py-8 sm:py-12 md:py-20">
+        <div className="grid md:grid-cols-2 gap-4 sm:gap-6 md:gap-8 items-center">
+          <div className="rounded-xl sm:rounded-2xl overflow-hidden border border-[#E8E1D6] order-2 md:order-1">
+            <img 
+              className="w-full h-40 sm:h-48 md:h-full object-cover" 
+              src={amenityImage} 
+              alt="المرافق" 
+              onError={(e) => ((e.target as HTMLImageElement).src = "/1.png")}
+            />
           </div>
           <div className="order-1 md:order-2">
-            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold">المرافق والخدمات</h3>
-            <p className="text-[#7C7469] mt-3 text-sm sm:text-base">
+            <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">المرافق والخدمات</h3>
+            <p className="text-[#7C7469] mt-2 sm:mt-3 text-xs sm:text-sm md:text-base">
               يقدم موون قاردن مجموعة من المرافق الراقية التي تشمل المسبح، المطعم، مركز اللياقة،
               قاعات الاجتماعات، ومناطق الجلسات الخارجية لإقامة مثالية مليئة بالراحة والاستجمام.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-4 sm:mt-6 flex flex-wrap gap-2 sm:gap-3">
               <Link
                 to="/amenities"
-                className="px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-[#2F2E2B] text-[#FAF8F3] text-sm"
+                className="px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full bg-[#2F2E2B] text-[#FAF8F3] text-xs sm:text-sm"
               >
                 استعرض المرافق
               </Link>
-              <a href="#stay" className="px-4 sm:px-6 py-2 sm:py-3 rounded-full border border-[#E8E1D6] text-sm">
+              <a href="#stay" className="px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full border border-[#E8E1D6] text-xs sm:text-sm">
                 الغرف
               </a>
             </div>
@@ -223,21 +398,20 @@ export default function MoonGardenAman() {
       </section>
 
       {/* الخريطة التفاعلية */}
-      {/* Coordinates: 17.253845, 42.616934 */}
-      <MapSection lat={17.253845} lng={42.616934} />
+      <MapSection />
 
       {/* الفوتر */}
       <footer className="bg-[#FAF8F3] border-t border-[#E8E1D6]">
-        <div className="max-w-7xl mx-auto px-4 py-8 sm:py-12 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 md:py-12 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
           <div className="col-span-2 md:col-span-1">
-            <img src="/logo.png" alt="Moon Garden logo" className="w-10 h-10 sm:w-12 sm:h-12 object-contain mb-3" />
-            <p className="text-xs sm:text-sm text-[var(--muted)] mt-3">
+            <img src="/logo.png" alt="Moon Garden logo" className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 object-contain mb-2 sm:mb-3" />
+            <p className="text-[10px] sm:text-xs md:text-sm text-[var(--muted)] mt-2 sm:mt-3">
               ملاذٌ خاص بإيقاع هادئ، حيث الأناقة الطبيعية.
             </p>
           </div>
           <div>
-            <p className="font-semibold mb-2 sm:mb-3 text-sm">روابط</p>
-            <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-[var(--muted)]">
+            <p className="font-semibold mb-2 sm:mb-3 text-xs sm:text-sm">روابط</p>
+            <ul className="space-y-1 sm:space-y-2 text-[10px] sm:text-xs md:text-sm text-[var(--muted)]">
               <li>
                 <Link to="/rooms" className="hover:text-[var(--accent)] hover:underline">
                   الغرف
@@ -258,26 +432,31 @@ export default function MoonGardenAman() {
                   تواصل معنا
                 </Link>
               </li>
+              <li>
+                <Link to="/review" className="hover:text-[var(--accent)] hover:underline">
+                  آراء العملاء
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
-            <p className="font-semibold mb-2 sm:mb-3 text-sm">التواصل</p>
-            <ul className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-[#7C7469]">
+            <p className="font-semibold mb-2 sm:mb-3 text-xs sm:text-sm">التواصل</p>
+            <ul className="space-y-1 sm:space-y-2 text-[10px] sm:text-xs md:text-sm text-[#7C7469]">
               <li>
-                <a href="tel:+966573878878" className="hover:text-[var(--accent)]">
-                  0573878878
+                <a href="tel:+966173266662" className="hover:text-[var(--accent)]">
+                  0173266662
                 </a>
               </li>
               <li className="break-all">moongarden95@gmail.com</li>
               <li>
-                <a href="https://wa.me/966573878878" className="hover:text-[#5E5B53]">
+                <a href="https://wa.me/966173266662" className="hover:text-[#5E5B53]">
                   واتساب
                 </a>
               </li>
             </ul>
           </div>
         </div>
-        <div className="text-center text-[10px] sm:text-xs text-[var(--muted)] py-4 sm:py-6 border-t border-[#E8E1D6]">
+        <div className="text-center text-[9px] sm:text-[10px] md:text-xs text-[var(--muted)] py-3 sm:py-4 md:py-6 border-t border-[#E8E1D6]">
           © {new Date().getFullYear()} Moon Garden – جميع الحقوق محفوظة.
         </div>
       </footer>

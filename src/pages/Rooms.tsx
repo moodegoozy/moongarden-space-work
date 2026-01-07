@@ -220,7 +220,7 @@ export default function Rooms() {
         {roomTypes.length === 0 ? (
           <p className="text-center text-[#7C7469]">لا توجد غرف حالياً</p>
         ) : (
-          <div className="grid gap-4 sm:gap-6 md:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 md:gap-6 lg:gap-10 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
             {roomTypes.map((roomType) => (
               <div
                 key={roomType.typeName}
@@ -229,45 +229,45 @@ export default function Rooms() {
               >
                 {/* شارة الخصم */}
                 {roomType.hasDiscount && roomType.discountInfo && (
-                  <div className="absolute top-3 right-3 bg-green-700 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
+                  <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-green-700 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-md z-10">
                     خصم {roomType.discountInfo.discount}
                     {roomType.discountInfo.discountType === "percent" ? "%" : " ريال"}
                   </div>
                 )}
 
                 {/* شارة عدد الوحدات المتاحة */}
-                <div className={`absolute top-3 left-3 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10 ${
+                <div className={`absolute top-2 sm:top-3 left-2 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-md z-10 ${
                   roomType.availableUnits > 0 ? "bg-[#C6A76D]" : "bg-red-600"
                 }`}>
                   {roomType.availableUnits > 0 
                     ? `${roomType.availableUnits} متاحة` 
-                    : "غير متاحة حالياً"}
+                    : "غير متاحة"}
                 </div>
 
                 <img
                   src={roomType.images?.[0] || "/placeholder.png"}
                   alt={roomType.typeName}
-                  className="w-full h-56 object-cover"
+                  className="w-full h-40 sm:h-56 object-cover"
                 />
 
-                <div className="p-4 text-right">
-                  <h3 className="font-semibold text-lg mb-1">{roomType.typeName}</h3>
+                <div className="p-3 sm:p-4 text-right">
+                  <h3 className="font-semibold text-base sm:text-lg mb-1 line-clamp-2">{roomType.typeName}</h3>
                   
-                  <p className="text-[#7C7469] text-sm mb-2">
+                  <p className="text-[#7C7469] text-xs sm:text-sm mb-2">
                     🛏️ {roomType.totalUnits} وحدات من هذا النوع
                   </p>
 
                   {roomType.hasDiscount && roomType.discountInfo ? (
                     <>
-                      <p className="text-[#A48E78] line-through text-sm">
+                      <p className="text-[#A48E78] line-through text-xs sm:text-sm">
                         {roomType.price} ريال
                       </p>
-                      <p className="text-green-700 font-bold text-lg">
+                      <p className="text-green-700 font-bold text-sm sm:text-lg">
                         {roomType.discountInfo.newPrice.toFixed(0)} ريال / الليلة 🎉
                       </p>
                     </>
                   ) : (
-                    <p className="text-[#2B2A28] font-bold text-lg">
+                    <p className="text-[#2B2A28] font-bold text-sm sm:text-lg">
                       {roomType.price} ريال / الليلة
                     </p>
                   )}

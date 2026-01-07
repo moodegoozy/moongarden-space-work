@@ -28,25 +28,25 @@ export default function UnitDetails() {
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F3]">
       <Navbar />
-      <div className="flex-1 max-w-4xl mx-auto py-10 text-right px-4">
-        <Swiper pagination={{ clickable: true }} modules={[Pagination]} className="w-full h-96 rounded-xl">
+      <div className="flex-1 max-w-4xl mx-auto py-6 sm:py-10 text-right px-4">
+        <Swiper pagination={{ clickable: true }} modules={[Pagination]} className="w-full h-64 sm:h-96 rounded-xl">
           {unit.images?.map((img: string, i: number) => (
             <SwiperSlide key={i}>
-              <img src={img} className="w-full h-96 object-cover rounded-xl" alt={unit.name} />
+              <img src={img} className="w-full h-64 sm:h-96 object-cover rounded-xl" alt={unit.name} />
             </SwiperSlide>
           ))}
         </Swiper>
 
-        <div className="mt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="mt-4 sm:mt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-[#2B2A28]">{unit.name}</h2>
+            <h2 className="text-xl sm:text-3xl font-bold text-[#2B2A28]">{unit.name}</h2>
             {unit.unitNumber && (
-              <p className="text-[#C6A76D] font-bold mt-1">🏠 رقم الوحدة: {unit.unitNumber}</p>
+              <p className="text-[#C6A76D] font-bold mt-1 text-sm sm:text-base">🏠 رقم الوحدة: {unit.unitNumber}</p>
             )}
           </div>
-          <div className="text-left">
-            <p className="text-2xl font-bold text-green-600">{unit.price} ريال</p>
-            <p className="text-sm text-[#7C7469]">لليلة الواحدة</p>
+          <div className="text-right md:text-left">
+            <p className="text-xl sm:text-2xl font-bold text-green-600">{unit.price} ريال</p>
+            <p className="text-xs sm:text-sm text-[#7C7469]">لليلة الواحدة</p>
           </div>
         </div>
 

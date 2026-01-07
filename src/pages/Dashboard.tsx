@@ -32,6 +32,8 @@ export default function Dashboard() {
     { to: "/dashboard/rooms/manage", label: "🛠️ إدارة الغرف", icon: "🛠️" },
     { to: "/dashboard/villas/manage", label: "⚙️ إدارة الفلل", icon: "⚙️" },
     { to: "/dashboard/amenities", label: "🏊 المرافق والخدمات", icon: "🏊" },
+    { to: "/dashboard/slider", label: "🖼️ سلايدر الصفحة", icon: "🖼️" },
+    { to: "/dashboard/vision-mission", label: "🎯 الرؤية والرسالة", icon: "🎯" },
     { to: "/dashboard/offers", label: "🎁 العروض", icon: "🎁" },
     { to: "/dashboard/settings", label: "⚙️ الإعدادات", icon: "⚙️" },
   ]

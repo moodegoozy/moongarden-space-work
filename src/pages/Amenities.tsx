@@ -11,18 +11,6 @@ type Amenity = {
   order?: number
 }
 
-// بيانات افتراضية في حال لم توجد بيانات في Firestore
-const defaultAmenities = [
-  { title: "المسبح الخارجي", image: "/1.png" },
-  { title: "المطعم الفاخر", image: "/2.png" },
-  { title: "مركز اللياقة", image: "/3.png" },
-  { title: "قاعات الاجتماعات", image: "/4.png" },
-  { title: "الحديقة والجلسات الخارجية", image: "/5.png" },
-  { title: "الاستقبال", image: "/6.png" },
-  { title: "الكافيه", image: "/7.png" },
-  { title: "الممرات والإطلالات", image: "/8.png" },
-]
-
 export default function Amenities() {
   const [amenities, setAmenities] = useState<Amenity[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,19 +19,13 @@ export default function Amenities() {
     const fetchAmenities = async () => {
       try {
         const snap = await getDocs(collection(db, "amenities"))
-        if (snap.empty) {
-          // استخدم البيانات الافتراضية
-          setAmenities(defaultAmenities.map((a, i) => ({ ...a, id: String(i) })))
-        } else {
-          const data = snap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-          })) as Amenity[]
-          setAmenities(data.sort((a, b) => (a.order || 0) - (b.order || 0)))
-        }
+        const data = snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as Amenity[]
+        setAmenities(data.sort((a, b) => (a.order || 0) - (b.order || 0)))
       } catch (err) {
         console.error("خطأ في جلب المرافق:", err)
-        setAmenities(defaultAmenities.map((a, i) => ({ ...a, id: String(i) })))
       } finally {
         setLoading(false)
       }
@@ -53,22 +35,22 @@ export default function Amenities() {
   return (
     <div dir="rtl" className="bg-[#F6F1E9] text-[#2B2A28] min-h-screen">
       {/* ✅ الهيدر */}
-      <section className="relative bg-[#2B2A28] text-[#FAF8F3] py-24 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">المرافق والخدمات</h1>
-        <p className="text-[#E1DCCE] text-lg max-w-2xl mx-auto">
+      <section className="relative bg-[#2B2A28] text-[#FAF8F3] py-12 sm:py-24 text-center px-4">
+        <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4">المرافق والخدمات</h1>
+        <p className="text-[#E1DCCE] text-sm sm:text-lg max-w-2xl mx-auto">
           اكتشف المرافق التي تجعل إقامتك في موون قاردن تجربة متكاملة تجمع بين الراحة والرفاهية.
         </p>
       </section>
 
       {/* ✅ شبكة الصور */}
-      <section className="max-w-7xl mx-auto px-6 py-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-16 h-16 border-4 border-[#C6A76D] border-t-transparent rounded-full animate-spin mb-4"></div>
             <p className="text-[#7C7469]">جاري تحميل المرافق...</p>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-8">
             {amenities.map((item, index) => (
               <AmenityCard key={item.id} title={item.title} image={item.image} delay={index * 0.1} />
             ))}
@@ -77,10 +59,10 @@ export default function Amenities() {
       </section>
 
       {/* ✅ زر العودة */}
-      <div className="text-center pb-12">
+      <div className="text-center pb-8 sm:pb-12">
         <a
           href="/"
-          className="inline-block px-8 py-3 bg-[#2B2A28] text-[#FAF8F3] rounded-full text-sm hover:opacity-90 transition"
+          className="inline-block px-6 sm:px-8 py-2.5 sm:py-3 bg-[#2B2A28] text-[#FAF8F3] rounded-full text-sm hover:opacity-90 transition"
         >
           العودة إلى الصفحة الرئيسية
         </a>
@@ -111,13 +93,13 @@ const AmenityCard = ({
       <img
         src={src}
         alt={title}
-        className="w-full h-56 object-cover"
+        className="w-full h-36 sm:h-56 object-cover"
         onError={() => {
           if (src !== "/placeholder.png") setSrc("/placeholder.png")
         }}
       />
-      <div className="p-4 text-center">
-        <h3 className="font-semibold text-lg">{title}</h3>
+      <div className="p-3 sm:p-4 text-center">
+        <h3 className="font-semibold text-sm sm:text-lg">{title}</h3>
       </div>
     </motion.div>
   )

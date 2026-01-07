@@ -23,16 +23,16 @@ const HotelSearchBar: React.FC = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full bg-[#FAF8F3]/95 rounded-2xl shadow-xl p-4 sm:p-5 max-w-3xl mx-auto border-2 border-[var(--accent,#C6A76D)] backdrop-blur"
-      style={{ fontFamily: "'Noto Naskh Arabic','Playfair Display',serif" }}
+      className="w-full bg-[#FAF8F3]/95 rounded-2xl shadow-xl p-4 sm:p-5 mx-auto border-2 border-[var(--accent,#C6A76D)] backdrop-blur box-border overflow-hidden"
+      style={{ fontFamily: "'Noto Naskh Arabic','Playfair Display',serif", maxWidth: '100%' }}
     >
       {/* الصف الأول: التواريخ */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3 mb-4">
         <div className="flex flex-col">
-          <label className="text-[10px] sm:text-xs mb-1 font-semibold text-[#A48E78]">تاريخ الوصول</label>
+          <label className="text-xs sm:text-xs mb-1.5 font-semibold text-[#A48E78]">تاريخ الوصول</label>
           <input
             type="date"
-            className="border-2 border-[#E8E1D6] rounded-lg px-2 py-2 sm:py-1.5 text-sm focus:border-[var(--accent,#C6A76D)] focus:ring-2 focus:ring-[var(--accent,#C6A76D)] transition w-full"
+            className="border-2 border-[#E8E1D6] rounded-xl px-3 py-3 sm:py-2 text-sm focus:border-[var(--accent,#C6A76D)] focus:ring-2 focus:ring-[var(--accent,#C6A76D)] transition w-full bg-white"
             min={today}
             value={checkIn}
             onChange={e => setCheckIn(e.target.value)}
@@ -40,10 +40,10 @@ const HotelSearchBar: React.FC = () => {
           />
         </div>
         <div className="flex flex-col">
-          <label className="text-[10px] sm:text-xs mb-1 font-semibold text-[#A48E78]">تاريخ المغادرة</label>
+          <label className="text-xs sm:text-xs mb-1.5 font-semibold text-[#A48E78]">تاريخ المغادرة</label>
           <input
             type="date"
-            className="border-2 border-[#E8E1D6] rounded-lg px-2 py-2 sm:py-1.5 text-sm focus:border-[var(--accent,#C6A76D)] focus:ring-2 focus:ring-[var(--accent,#C6A76D)] transition w-full"
+            className="border-2 border-[#E8E1D6] rounded-xl px-3 py-3 sm:py-2 text-sm focus:border-[var(--accent,#C6A76D)] focus:ring-2 focus:ring-[var(--accent,#C6A76D)] transition w-full bg-white"
             min={checkIn || today}
             value={checkOut}
             onChange={e => setCheckOut(e.target.value)}
@@ -53,12 +53,12 @@ const HotelSearchBar: React.FC = () => {
       </div>
 
       {/* الصف الثاني: عدد النزلاء */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-2 gap-4 sm:gap-3 mb-4">
         <div className="flex flex-col">
-          <label className="text-[10px] sm:text-xs mb-1 font-semibold text-[#A48E78]">البالغين</label>
+          <label className="text-xs sm:text-xs mb-1.5 font-semibold text-[#A48E78]">البالغين</label>
           <input
             type="number"
-            className="border-2 border-[#E8E1D6] rounded-lg px-2 py-2 sm:py-1.5 text-sm focus:border-[var(--accent,#C6A76D)] focus:ring-2 focus:ring-[var(--accent,#C6A76D)] transition w-full"
+            className="border-2 border-[#E8E1D6] rounded-xl px-3 py-3 sm:py-2 text-sm focus:border-[var(--accent,#C6A76D)] focus:ring-2 focus:ring-[var(--accent,#C6A76D)] transition w-full bg-white text-center"
             min={1}
             max={10}
             value={adults}
@@ -67,10 +67,10 @@ const HotelSearchBar: React.FC = () => {
           />
         </div>
         <div className="flex flex-col">
-          <label className="text-[10px] sm:text-xs mb-1 font-semibold text-[#A48E78]">الأطفال</label>
+          <label className="text-xs sm:text-xs mb-1.5 font-semibold text-[#A48E78]">الأطفال</label>
           <input
             type="number"
-            className="border-2 border-[#E8E1D6] rounded-lg px-2 py-2 sm:py-1.5 text-sm focus:border-[var(--accent,#C6A76D)] focus:ring-2 focus:ring-[var(--accent,#C6A76D)] transition w-full"
+            className="border-2 border-[#E8E1D6] rounded-xl px-3 py-3 sm:py-2 text-sm focus:border-[var(--accent,#C6A76D)] focus:ring-2 focus:ring-[var(--accent,#C6A76D)] transition w-full bg-white text-center"
             min={0}
             max={10}
             value={children}
@@ -80,11 +80,11 @@ const HotelSearchBar: React.FC = () => {
       </div>
 
       {/* الصف الثالث: البحث النصي */}
-      <div className="flex flex-col mb-4">
-        <label className="text-[10px] sm:text-xs mb-1 font-semibold text-[#A48E78]">بحث نصي (اختياري)</label>
+      <div className="flex flex-col mb-5">
+        <label className="text-xs sm:text-xs mb-1.5 font-semibold text-[#A48E78]">بحث نصي (اختياري)</label>
         <input
           type="text"
-          className="border-2 border-[#E8E1D6] rounded-lg px-3 py-2 sm:py-1.5 text-sm focus:border-[var(--accent,#C6A76D)] focus:ring-2 focus:ring-[var(--accent,#C6A76D)] transition w-full"
+          className="border-2 border-[#E8E1D6] rounded-xl px-4 py-3 sm:py-2 text-sm focus:border-[var(--accent,#C6A76D)] focus:ring-2 focus:ring-[var(--accent,#C6A76D)] transition w-full bg-white"
           placeholder="مثال: اطلالة بحرية"
           value={query}
           onChange={e => setQuery(e.target.value)}

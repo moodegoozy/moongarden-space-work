@@ -30,18 +30,6 @@ export default function AmenitiesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 6
 
-  // بيانات افتراضية للمرافق
-  const defaultAmenities = [
-    { title: "المسبح الخارجي", image: "/1.png", order: 1 },
-    { title: "المطعم الفاخر", image: "/2.png", order: 2 },
-    { title: "مركز اللياقة", image: "/3.png", order: 3 },
-    { title: "قاعات الاجتماعات", image: "/4.png", order: 4 },
-    { title: "الحديقة والجلسات الخارجية", image: "/5.png", order: 5 },
-    { title: "الاستقبال", image: "/6.png", order: 6 },
-    { title: "الكافيه", image: "/7.png", order: 7 },
-    { title: "الممرات والإطلالات", image: "/8.png", order: 8 },
-  ]
-
   useEffect(() => {
     fetchAmenities()
   }, [])
@@ -49,25 +37,11 @@ export default function AmenitiesPage() {
   const fetchAmenities = async () => {
     try {
       const snap = await getDocs(collection(db, "amenities"))
-      if (snap.empty) {
-        // إذا لم تكن هناك بيانات، أضف البيانات الافتراضية
-        for (const amenity of defaultAmenities) {
-          await addDoc(collection(db, "amenities"), amenity)
-        }
-        // أعد الجلب
-        const newSnap = await getDocs(collection(db, "amenities"))
-        const data = newSnap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as Amenity[]
-        setAmenities(data.sort((a, b) => (a.order || 0) - (b.order || 0)))
-      } else {
-        const data = snap.docs.map((d) => ({
-          id: d.id,
-          ...d.data(),
-        })) as Amenity[]
-        setAmenities(data.sort((a, b) => (a.order || 0) - (b.order || 0)))
-      }
+      const data = snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      })) as Amenity[]
+      setAmenities(data.sort((a, b) => (a.order || 0) - (b.order || 0)))
     } catch (err) {
       console.error("خطأ في جلب المرافق:", err)
     } finally {

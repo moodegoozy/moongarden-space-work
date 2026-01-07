@@ -213,17 +213,17 @@ export default function Villas() {
 
       {/* ✅ عرض أنواع الفلل (بطاقة واحدة لكل نوع) */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
-        <h2 className="text-lg sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6 text-center text-[#2B2A28]">
+        <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4 md:mb-6 text-center text-[#2B2A28]">
           اختر الفيلا أو الجناح المناسب لإقامتك
         </h2>
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 sm:mb-10 text-center golden-banner-title">
+        <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold mb-4 sm:mb-6 md:mb-10 text-center golden-banner-title">
           الشاليهات الفاخرة
         </h2>
 
         {villaTypes.length === 0 ? (
           <p className="text-center text-[#7C7469]">لا توجد فلل حالياً</p>
         ) : (
-          <div className="grid gap-4 sm:gap-6 md:gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 md:gap-6 lg:gap-10 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
             {villaTypes.map((villaType) => (
               <div
                 key={villaType.typeName}
@@ -232,45 +232,45 @@ export default function Villas() {
               >
                 {/* شارة الخصم */}
                 {villaType.hasDiscount && villaType.discountInfo && (
-                  <div className="absolute top-3 right-3 bg-green-700 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
+                  <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-green-700 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-md z-10">
                     خصم {villaType.discountInfo.discount}
                     {villaType.discountInfo.discountType === "percent" ? "%" : " ريال"}
                   </div>
                 )}
 
                 {/* شارة عدد الوحدات المتاحة */}
-                <div className={`absolute top-3 left-3 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10 ${
+                <div className={`absolute top-2 sm:top-3 left-2 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-md z-10 ${
                   villaType.availableUnits > 0 ? "bg-[#C6A76D]" : "bg-red-600"
                 }`}>
                   {villaType.availableUnits > 0 
                     ? `${villaType.availableUnits} متاحة` 
-                    : "غير متاحة حالياً"}
+                    : "غير متاحة"}
                 </div>
 
                 <img
                   src={villaType.images?.[0] || "/placeholder.png"}
                   alt={villaType.typeName}
-                  className="w-full h-56 object-cover"
+                  className="w-full h-40 sm:h-56 object-cover"
                 />
 
-                <div className="p-4 text-right">
-                  <h3 className="font-semibold text-lg mb-1">{villaType.typeName}</h3>
+                <div className="p-3 sm:p-4 text-right">
+                  <h3 className="font-semibold text-base sm:text-lg mb-1 line-clamp-2">{villaType.typeName}</h3>
                   
-                  <p className="text-[#7C7469] text-sm mb-2">
+                  <p className="text-[#7C7469] text-xs sm:text-sm mb-2">
                     🏡 {villaType.totalUnits} وحدات من هذا النوع
                   </p>
 
                   {villaType.hasDiscount && villaType.discountInfo ? (
                     <>
-                      <p className="text-[#A48E78] line-through text-sm">
+                      <p className="text-[#A48E78] line-through text-xs sm:text-sm">
                         {villaType.price} ريال
                       </p>
-                      <p className="text-green-700 font-bold text-lg">
+                      <p className="text-green-700 font-bold text-sm sm:text-lg">
                         {villaType.discountInfo.newPrice.toFixed(0)} ريال / الليلة 🎉
                       </p>
                     </>
                   ) : (
-                    <p className="text-[#2B2A28] font-bold text-lg">
+                    <p className="text-[#2B2A28] font-bold text-sm sm:text-lg">
                       {villaType.price} ريال / الليلة
                     </p>
                   )}
