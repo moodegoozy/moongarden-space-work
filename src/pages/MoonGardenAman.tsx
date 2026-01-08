@@ -31,20 +31,38 @@ type VisionMission = {
   missionImage: string
 }
 
+type NewsItem = {
+  id: string
+  title: string
+  content: string
+  image: string
+  date: string
+  order: number
+}
+
 export default function MoonGardenAman() {
   const [rooms, setRooms] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [amenityImage, setAmenityImage] = useState("/1.png") // صورة افتراضية
   const [slides, setSlides] = useState<SliderItem[]>([])
   const [visionMission, setVisionMission] = useState<VisionMission | null>(null)
+  const [news, setNews] = useState<NewsItem[]>([])
 
-  // ✅ نسحب بيانات الغرف وصورة المرافق والسلايدر والرؤية والرسالة من Firestore
+  // ✅ نسحب بيانات الغرف وصورة المرافق والسلايدر والرؤية والرسالة والأخبار من Firestore (بالتوازي)
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // جلب الغرف
-        const snap = await getDocs(collection(db, "rooms"))
-        const data = snap.docs.map((doc) => {
+        // جلب جميع البيانات بالتوازي لتسريع التحميل
+        const [roomsSnap, amenitiesSnap, sliderSnap, vmDoc, newsSnap] = await Promise.all([
+          getDocs(collection(db, "rooms")),
+          getDocs(query(collection(db, "amenities"), orderBy("order", "asc"), limit(1))),
+          getDocs(query(collection(db, "slider"), orderBy("order", "asc"))),
+          getDoc(doc(db, "settings", "vision_mission")),
+          getDocs(query(collection(db, "news"), orderBy("order", "asc")))
+        ])
+
+        // معالجة الغرف
+        const data = roomsSnap.docs.map((doc) => {
           const room = doc.data()
           const images = Array.isArray(room.images)
             ? room.images
@@ -62,10 +80,7 @@ export default function MoonGardenAman() {
         })
         setRooms(data)
 
-        // جلب أول صورة من المرافق
-        const amenitiesSnap = await getDocs(
-          query(collection(db, "amenities"), orderBy("order", "asc"), limit(1))
-        )
+        // معالجة المرافق
         if (!amenitiesSnap.empty) {
           const firstAmenity = amenitiesSnap.docs[0].data()
           if (firstAmenity.image) {
@@ -73,21 +88,24 @@ export default function MoonGardenAman() {
           }
         }
 
-        // جلب شرائح السلايدر
-        const sliderSnap = await getDocs(
-          query(collection(db, "slider"), orderBy("order", "asc"))
-        )
+        // معالجة السلايدر
         const sliderData = sliderSnap.docs.map((d) => ({
           id: d.id,
           ...d.data(),
         })) as SliderItem[]
         setSlides(sliderData)
 
-        // جلب الرؤية والرسالة
-        const vmDoc = await getDoc(doc(db, "settings", "vision_mission"))
+        // معالجة الرؤية والرسالة
         if (vmDoc.exists()) {
           setVisionMission(vmDoc.data() as VisionMission)
         }
+
+        // معالجة الأخبار
+        const newsData = newsSnap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as NewsItem[]
+        setNews(newsData)
       } catch (err) {
         console.error("❌ خطأ أثناء تحميل البيانات:", err)
       } finally {
@@ -199,42 +217,53 @@ export default function MoonGardenAman() {
         </div>
       </section>
 
-      {/* ✅ بانر الرؤية والرسالة - متحرك */}
-      {visionMission && (visionMission.vision || visionMission.mission) && (
+      {/* ✅ بانر الرؤية والرسالة وآخر الأخبار - متحرك */}
+      {(visionMission && (visionMission.vision || visionMission.mission)) || news.length > 0 ? (
         <section className="relative w-full py-8 sm:py-12">
           <div className="max-w-7xl mx-auto px-4">
             <Swiper
               modules={[Autoplay, Pagination]}
               autoplay={{ delay: 10000, disableOnInteraction: false }}
-              loop={visionMission.vision && visionMission.mission}
+              loop={(visionMission?.vision && visionMission?.mission) || news.length > 0}
               pagination={{ clickable: true }}
-              className="w-full rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl"
+              className="w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl"
             >
               {/* الرؤية */}
               {visionMission.vision && (
                 <SwiperSlide>
                   <div 
-                    className="relative min-h-[200px] sm:min-h-[280px] md:min-h-[320px] w-full"
+                    className="relative min-h-[280px] sm:min-h-[350px] md:min-h-[420px] w-full"
                     style={{
                       backgroundImage: visionMission.visionImage ? `url(${visionMission.visionImage})` : 'none',
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
-                      backgroundColor: visionMission.visionImage ? 'transparent' : '#2B2A28',
+                      backgroundColor: visionMission.visionImage ? 'transparent' : '#1a1918',
                     }}
                   >
-                    {/* طبقة التظليل */}
-                    <div className={`absolute inset-0 ${visionMission.visionImage ? 'bg-black/60' : 'bg-gradient-to-br from-[#2B2A28] to-[#3D3A36]'}`} />
+                    {/* طبقة التظليل الفاخرة */}
+                    <div className={`absolute inset-0 ${visionMission.visionImage ? 'bg-gradient-to-t from-black/80 via-black/50 to-black/30' : 'bg-gradient-to-br from-[#1a1918] via-[#2B2A28] to-[#1a1918]'}`} />
                     
-                    <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-6 sm:p-10 md:p-14">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#C6A76D]/30 backdrop-blur rounded-full flex items-center justify-center mb-4 sm:mb-5">
-                        <span className="text-3xl sm:text-4xl">👁️</span>
-                      </div>
-                      <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#E2C891] mb-3 sm:mb-4 drop-shadow-lg">
+                    {/* خطوط ديكور ذهبية */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent opacity-60"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent opacity-60"></div>
+                    
+                    <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-8 sm:p-12 md:p-16">
+                      {/* عنوان فرعي صغير */}
+                      <p className="text-[#C6A76D] text-xs sm:text-sm tracking-[0.3em] uppercase mb-3 sm:mb-4 font-light">Moon Garden</p>
+                      
+                      {/* خط ديكور */}
+                      <div className="w-16 sm:w-24 h-px bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent mb-4 sm:mb-6"></div>
+                      
+                      <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 drop-shadow-lg" style={{ fontFamily: "'Playfair Display', 'Noto Naskh Arabic', serif" }}>
                         {visionMission.visionTitle || "رؤيتنا"}
                       </h3>
-                      <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl drop-shadow-md">
+                      
+                      <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 leading-relaxed max-w-4xl drop-shadow-md font-light">
                         {visionMission.vision}
                       </p>
+                      
+                      {/* خط ديكور سفلي */}
+                      <div className="w-16 sm:w-24 h-px bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent mt-6 sm:mt-8"></div>
                     </div>
                   </div>
                 </SwiperSlide>
@@ -244,35 +273,87 @@ export default function MoonGardenAman() {
               {visionMission.mission && (
                 <SwiperSlide>
                   <div 
-                    className="relative min-h-[200px] sm:min-h-[280px] md:min-h-[320px] w-full"
+                    className="relative min-h-[280px] sm:min-h-[350px] md:min-h-[420px] w-full"
                     style={{
                       backgroundImage: visionMission.missionImage ? `url(${visionMission.missionImage})` : 'none',
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
-                      backgroundColor: visionMission.missionImage ? 'transparent' : '#2B2A28',
+                      backgroundColor: visionMission.missionImage ? 'transparent' : '#1a1918',
                     }}
                   >
-                    {/* طبقة التظليل */}
-                    <div className={`absolute inset-0 ${visionMission.missionImage ? 'bg-black/60' : 'bg-gradient-to-br from-[#2B2A28] to-[#3D3A36]'}`} />
+                    {/* طبقة التظليل الفاخرة */}
+                    <div className={`absolute inset-0 ${visionMission.missionImage ? 'bg-gradient-to-t from-black/80 via-black/50 to-black/30' : 'bg-gradient-to-br from-[#1a1918] via-[#2B2A28] to-[#1a1918]'}`} />
                     
-                    <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-6 sm:p-10 md:p-14">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#C6A76D]/30 backdrop-blur rounded-full flex items-center justify-center mb-4 sm:mb-5">
-                        <span className="text-3xl sm:text-4xl">📝</span>
-                      </div>
-                      <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#E2C891] mb-3 sm:mb-4 drop-shadow-lg">
+                    {/* خطوط ديكور ذهبية */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent opacity-60"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent opacity-60"></div>
+                    
+                    <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-8 sm:p-12 md:p-16">
+                      {/* عنوان فرعي صغير */}
+                      <p className="text-[#C6A76D] text-xs sm:text-sm tracking-[0.3em] uppercase mb-3 sm:mb-4 font-light">Moon Garden</p>
+                      
+                      {/* خط ديكور */}
+                      <div className="w-16 sm:w-24 h-px bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent mb-4 sm:mb-6"></div>
+                      
+                      <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 drop-shadow-lg" style={{ fontFamily: "'Playfair Display', 'Noto Naskh Arabic', serif" }}>
                         {visionMission.missionTitle || "رسالتنا"}
                       </h3>
-                      <p className="text-sm sm:text-base md:text-lg text-white/90 leading-relaxed max-w-3xl drop-shadow-md">
+                      
+                      <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 leading-relaxed max-w-4xl drop-shadow-md font-light">
                         {visionMission.mission}
                       </p>
+                      
+                      {/* خط ديكور سفلي */}
+                      <div className="w-16 sm:w-24 h-px bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent mt-6 sm:mt-8"></div>
                     </div>
                   </div>
                 </SwiperSlide>
               )}
+
+              {/* آخر الأخبار - في نفس السلايدر */}
+              {news.map((item) => (
+                <SwiperSlide key={item.id}>
+                  <div 
+                    className="relative min-h-[280px] sm:min-h-[350px] md:min-h-[420px] w-full"
+                    style={{
+                      backgroundImage: item.image ? `url(${item.image})` : 'none',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundColor: item.image ? 'transparent' : '#1a1918',
+                    }}
+                  >
+                    {/* طبقة التظليل الفاخرة */}
+                    <div className={`absolute inset-0 ${item.image ? 'bg-gradient-to-t from-black/80 via-black/50 to-black/30' : 'bg-gradient-to-br from-[#1a1918] via-[#2B2A28] to-[#1a1918]'}`} />
+                    
+                    {/* خطوط ديكور ذهبية */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent opacity-60"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent opacity-60"></div>
+                    
+                    <div className="relative z-10 h-full flex flex-col justify-center items-center text-center p-8 sm:p-12 md:p-16">
+                      {/* عنوان فرعي صغير */}
+                      <p className="text-[#C6A76D] text-xs sm:text-sm tracking-[0.3em] uppercase mb-3 sm:mb-4 font-light">آخر الأخبار • {item.date}</p>
+                      
+                      {/* خط ديكور */}
+                      <div className="w-16 sm:w-24 h-px bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent mb-4 sm:mb-6"></div>
+                      
+                      <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 drop-shadow-lg" style={{ fontFamily: "'Playfair Display', 'Noto Naskh Arabic', serif" }}>
+                        {item.title}
+                      </h3>
+                      
+                      <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 leading-relaxed max-w-4xl drop-shadow-md font-light">
+                        {item.content}
+                      </p>
+                      
+                      {/* خط ديكور سفلي */}
+                      <div className="w-16 sm:w-24 h-px bg-gradient-to-r from-transparent via-[#C6A76D] to-transparent mt-6 sm:mt-8"></div>
+                    </div>
+                  </div>
+                </SwiperSlide>
+              ))}
             </Swiper>
           </div>
         </section>
-      )}
+      ) : null}
 
       {/* شريط بحث فندقي كلاسيكي */}
       <section className="z-20 relative w-full px-4" style={{marginTop: '24px', position: 'relative'}}>
